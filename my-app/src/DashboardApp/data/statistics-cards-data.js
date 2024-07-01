@@ -4,13 +4,16 @@ import {
   UsersIcon,
   ChartBarIcon,
 } from "@heroicons/react/24/solid";
+import Ibm from "../../img/ibm.png";
+import Google from "../../img/google_logo.jpeg";
+import Stanford from "../../img/stanford_logo.png"
 
 export const statisticsCardsData = [
   {
     color: "gray",
-    icon: BanknotesIcon,
-    title: "Today's Money",
-    value: "$53k",
+    icon: Ibm,
+    title: "IBM Cloud Basics",
+    value: "Week 1",
     footer: {
       color: "text-green-500",
       value: "+55%",
@@ -19,35 +22,35 @@ export const statisticsCardsData = [
   },
   {
     color: "gray",
-    icon: UsersIcon,
-    title: "Today's Users",
-    value: "2,300",
+    icon: Google,
+    title: "Google Python Basics",
+    value: "Week 3",
     footer: {
       color: "text-green-500",
       value: "+3%",
-      label: "than last month",
+      label: "than last week",
     },
   },
   {
     color: "gray",
-    icon: UserPlusIcon,
-    title: "New Clients",
-    value: "3,462",
+    icon: Stanford,
+    title: "Stanford AI Basics",
+    value: "Week 3",
     footer: {
       color: "text-red-500",
       value: "-2%",
-      label: "than yesterday",
+      label: "than last week",
     },
   },
   {
     color: "gray",
-    icon: ChartBarIcon,
-    title: "Sales",
-    value: "$103,430",
+    icon: Google,
+    title: "Advanced Python Programming",
+    value: "Week 5",
     footer: {
       color: "text-green-500",
       value: "+5%",
-      label: "than yesterday",
+      label: "than last week",
     },
   },
 ];

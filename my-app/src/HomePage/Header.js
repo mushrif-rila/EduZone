@@ -35,51 +35,52 @@ import { Input } from "@material-tailwind/react";
  
 const navListMenuItems = [
   {
-    title: "Products",
-    description: "Find the perfect solution for your needs.",
-    icon: SquaresPlusIcon,
+    title: "Courses",
+    description: "Discover a wide range of courses to enhance your skills.",
+    icon: RectangleGroupIcon,
   },
   {
     title: "About Us",
-    description: "Meet and learn about our dedication",
+    description: "Learn more about our mission and values.",
     icon: UserGroupIcon,
   },
   {
     title: "Blog",
-    description: "Find the perfect solution for your needs.",
+    description: "Read articles and insights from industry experts.",
     icon: Bars4Icon,
   },
   {
-    title: "Services",
-    description: "Learn how we can help you achieve your goals.",
+    title: "Tutoring",
+    description: "Get personalized help from our experienced tutors.",
     icon: SunIcon,
   },
   {
     title: "Support",
-    description: "Reach out to us for assistance or inquiries",
+    description: "Reach out to us for any assistance or inquiries.",
     icon: GlobeAmericasIcon,
   },
   {
     title: "Contact",
-    description: "Find the perfect solution for your needs.",
+    description: "Get in touch with us for more information.",
     icon: PhoneIcon,
   },
   {
     title: "News",
-    description: "Read insightful articles, tips, and expert opinions.",
+    description: "Stay updated with the latest news and events.",
     icon: NewspaperIcon,
   },
   {
-    title: "Products",
-    description: "Find the perfect solution for your needs.",
-    icon: RectangleGroupIcon,
+    title: "Library",
+    description: "Access a vast collection of educational resources.",
+    icon: SquaresPlusIcon,
   },
   {
     title: "Special Offers",
-    description: "Explore limited-time deals and bundles",
+    description: "Explore our latest discounts and deals.",
     icon: TagIcon,
   },
 ];
+
  
 function NavListMenu() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);

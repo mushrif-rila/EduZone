@@ -26,19 +26,18 @@ import {
   ordersOverviewData,
 } from "../../data/index";
 import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
+import Ibm from "../../../img/ibm.png"
 
 export function Home() {
   return (
     <div className="mt-12">
-      <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-2">
         {statisticsCardsData.map(({ icon, title, footer, ...rest }) => (
           <StatisticsCard
             key={title}
             {...rest}
             title={title}
-            icon={React.createElement(icon, {
-              className: "w-6 h-6 text-white",
-            })}
+            icon={<img src={icon} className="w-12 h-12"></img>}
             footer={
               <Typography className="font-normal text-blue-gray-600">
                 <strong className={footer.color}>{footer.value}</strong>
@@ -82,7 +81,7 @@ export function Home() {
                 className="flex items-center gap-1 font-normal text-blue-gray-600"
               >
                 <CheckCircleIcon strokeWidth={3} className="h-4 w-4 text-blue-gray-200" />
-                <strong>30 done</strong> this month
+                <strong>3 done</strong> this month
               </Typography>
             </div>
             <Menu placement="left-start">
@@ -106,7 +105,7 @@ export function Home() {
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>
-                  {["companies", "members", "budget", "completion"].map(
+                  {["name", "contributors", "technologies", "completion"].map(
                     (el) => (
                       <th
                         key={el}
@@ -201,7 +200,7 @@ export function Home() {
             className="m-0 p-6"
           >
             <Typography variant="h6" color="blue-gray" className="mb-2">
-              Orders Overview
+              Projects Overview
             </Typography>
             <Typography
               variant="small"

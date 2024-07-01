@@ -5,8 +5,8 @@ const websiteViewsChart = {
   height: 220,
   series: [
     {
-      name: "Views",
-      data: [50, 20, 10, 22, 50, 10, 40],
+      name: "Hours",
+      data: [4, 5, 5, 4, 3, 10, 8],
     },
   ],
   options: {
@@ -30,8 +30,8 @@ const dailySalesChart = {
   height: 220,
   series: [
     {
-      name: "Sales",
-      data: [50, 40, 300, 320, 500, 350, 200, 230, 500],
+      name: "Projects",
+      data: [1, 4, 3, 3, 5, 6, 4, 2, 5],
     },
   ],
   options: {
@@ -65,8 +65,8 @@ const completedTaskChart = {
   height: 220,
   series: [
     {
-      name: "Sales",
-      data: [50, 40, 300, 320, 500, 350, 200, 230, 500],
+      name: "Courses",
+      data: [2, 2, 3, 3, 5, 3, 2, 2, 5],
     },
   ],
   options: {
@@ -99,7 +99,7 @@ const completedTasksChart = {
   series: [
     {
       name: "Tasks",
-      data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
+      data: [1, 2, 3, 3, 2, 3, 5, 2, 5],
     },
   ],
 };
@@ -107,21 +107,21 @@ const completedTasksChart = {
 export const statisticsChartsData = [
   {
     color: "white",
-    title: "Website View",
+    title: "Watching Hours",
     description: "Last Campaign Performance",
     footer: "campaign sent 2 days ago",
     chart: websiteViewsChart,
   },
   {
     color: "white",
-    title: "Daily Sales",
+    title: "Projects procceess",
     description: "15% increase in today sales",
     footer: "updated 4 min ago",
     chart: dailySalesChart,
   },
   {
     color: "white",
-    title: "Completed Tasks",
+    title: "Completed Courses",
     description: "Last Campaign Performance",
     footer: "just updated",
     chart: completedTasksChart,

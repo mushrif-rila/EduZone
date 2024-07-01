@@ -4,11 +4,11 @@ export const platformSettingsData = [
     options: [
       {
         checked: true,
-        label: "Email me when someone follows me",
+        label: "Email me when a new project created",
       },
       {
         checked: false,
-        label: "Email me when someone answers on my post",
+        label: "Email me when someone answers on my questions",
       },
       {
         checked: true,

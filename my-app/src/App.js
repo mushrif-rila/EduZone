@@ -31,3 +31,7 @@ function App() {
 }
 
 export default App;
+
+    // "start": "concurrently \"npm run start-react\" \"npm run start-django\"",
+    // "start-react": "react-scripts start",
+    // "start-django": "cd ../django_backend && python manage.py runserver",

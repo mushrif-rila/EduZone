@@ -4,6 +4,7 @@ import image1 from './images/self-learning.png';
 import image2 from './images/skills.png';
 import image3 from './images/grade.png';
 import { Fade, Slide, Zoom } from "react-awesome-reveal";
+import { toBeDisabled } from "@testing-library/jest-dom/matchers";
  
 function Whyedu() {
   return (
@@ -12,7 +13,7 @@ function Whyedu() {
     <h1 className="heading">Why eduZone</h1>
     </Fade>
     <Zoom duration={2000}>
-    <Carousel className="rounded-xl" id="slide">
+    <Carousel className="rounded-xl" id="slide" autoplay="True" loop="True">
       <div className="h-full w-full">
         <img
           src={image1}
