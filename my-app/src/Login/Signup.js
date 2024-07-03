@@ -1,159 +1,94 @@
-// src/Login/Signup.js
-
+import React, { useState, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-    Card,
-    Input,
-    Checkbox,
-    Button,
-    Typography,
-  } from "@material-tailwind/react";
-  import { useState } from "react";
-  import Message from './Message';
-  import { Fade} from "react-awesome-reveal";
-  import { useNavigate } from 'react-router-dom';
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Typography,
+  Input,
+  Checkbox,
+  Button,
+} from "@material-tailwind/react";
+import './login-signup.css';
+import AuthContext from "../context/AuthContext"
 
-  import './login-signup.css'
-   
-  function SignUp() {
+function Signup() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [full_name, setFull_name] = useState("")
+  const [username, setUsername] = useState("")
+  const [password2, setPassword2] = useState("")
+  const [institute, setInstitute] = useState("")
+  const {registerUser} = useContext(AuthContext)
 
-    const navigate = useNavigate();
+  const [isTeacher, setIsTeacher] = useState(false)
 
-    const LoginClick = () => {
-      navigate('/login'); // Navigate to the About page
-    };
+  useEffect(() => {
+    const role = localStorage.getItem('role');
+    if (role === 'teacher') {
+      setIsTeacher(true);
+    }
+  }, []);
 
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [message, setMessage] = useState('');
+  const role = localStorage.getItem('role');
 
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      try {
-        const response = await fetch('http://localhost:8000/api/register/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password }),
-        });
-  
-        const data = await response.json();
-        if (response.ok) {
-          setMessage('Registration successful!');
-          navigate('/login');
-        } else {
-          setMessage(data.msg);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        setMessage('Something went wrong!');
-      }
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    console.log(full_name)
+    console.log(email)
+    console.log(username)
 
-
-    return (
-      <Fade>
-       <Card id="signup-card" color="transparent" shadow={false}>
-        <Typography variant="h4" color="blue-gray">
-          Sign Up
-        </Typography>
-        <Typography color="gray" className="mt-1 font-normal">
-          Nice to meet you! Enter your details to register.
-        </Typography>
-        <form className="mt-8 mb-2 w-80 max-w-screen-lg sm:w-96" onSubmit={handleSubmit}>
-          {message && <Message message={message} />}
-          <div className="mb-1 flex flex-col gap-6">
-            <Typography variant="h6" color="blue-gray" className="-mb-3">
-              Your Name
-            </Typography>
-            <Input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              size="lg"
-              placeholder="name@mail.com"
-              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
-            />
-            <Typography variant="h6" color="blue-gray" className="-mb-3">
-              Your Email
-            </Typography>
-            <Input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              size="lg"
-              placeholder="name@mail.com"
-              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
-            />
-            <Typography variant="h6" color="blue-gray" className="-mb-3">
-              Password
-            </Typography>
-            <Input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              size="lg"
-              placeholder="********"
-              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
-            />
-          </div>
-          <Checkbox
-            label={
-              <Typography
-                variant="small"
-                color="gray"
-                className="flex items-center font-normal"
-              >
-                I agree the
-                <a
-                  href="#"
-                  className="font-medium transition-colors hover:text-gray-900"
-                >
-                  &nbsp;Terms and Conditions
-                </a>
-              </Typography>
-            }
-            containerProps={{ className: "-ml-2.5" }}
-          />
-          <Button className="mt-6" fullWidth type="submit">
-            sign up
-          </Button>
-          <Button
-            variant="outlined"
-            size="lg"
-            className="mt-6 flex h-12 items-center justify-center gap-2"
-            fullWidth
-          >
-            <img
-              src={`https://www.material-tailwind.com/logos/logo-google.png`}
-              alt="google"
-              className="h-6 w-6"
-            />{" "}
-            sign up with google
-          </Button>
-          <Typography color="gray" className="mt-4 text-center font-normal">
-            Already have an account?{" "}
-            <a href="#" className="font-medium text-gray-900" onClick={LoginClick}>
-              Sign In
-            </a>
-          </Typography>
-          
-        </form>
-      </Card>
-      </Fade>
-    );
+    registerUser(full_name, email, username, password, password2, role, institute)
+    localStorage.removeItem('role')
   }
 
-  export default SignUp;
+  return (
+    
+      <form action="#" className="mx-auto max-w-[24rem] text-left" onSubmit={handleSubmit} id="card">
+        <Card className="w-96">
+          <CardHeader
+            variant="gradient"
+            color="gray"
+            className="mb-4 grid h-28 place-items-center"
+          >
+            <Typography variant="h3" color="white">
+              EduZone
+            </Typography>
+          </CardHeader>
+          <CardBody className="flex flex-col gap-4">
+            <Input label="Full Name" size="lg" name='full_name' onChange={(e) => setFull_name(e.target.value)} />
+            <Input label="Email" size="lg" name='email' onChange={(e) => setEmail(e.target.value)} />
+            {isTeacher && <Input label="Institute Name" size="lg" name='institute' onChange={(e) => setInstitute(e.target.value)} />}
+            <Input label="Username" size="lg" name='username' onChange={(e) => setUsername(e.target.value)} />
+            <Input label="Password" type="password" size="lg" name='password' onChange={(e) => setPassword(e.target.value)} />
+            <Input label="Confirm Password" type="password" size="lg" name='password2' onChange={(e) => setPassword2(e.target.value)} />
+            
+          </CardBody>
+          <CardFooter className="pt-0 flex flex-col gap-4">
+           
+            <Button variant="gradient" fullWidth type="submit">
+              Sign Up
+            </Button>
+            <Typography variant="small" className="mt-6 flex justify-center">
+              Already have an account?
+              <Typography
+                as="a"
+                href="#signup"
+                variant="small"
+                color="blue-gray"
+                className="ml-1 font-bold"
+                onClick={() => navigate('/login')}
+              >
+                Sign in
+              </Typography>
+            </Typography>
+          </CardFooter>
+        </Card>
+      </form>
+   
+  );
+}
+
+export default Signup;

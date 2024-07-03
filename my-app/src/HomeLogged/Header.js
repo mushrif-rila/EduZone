@@ -13,6 +13,7 @@ import {
   MenuList,
   MenuItem,
   Avatar,
+  list,
 } from "@material-tailwind/react";
 import {
   ChevronDownIcon,
@@ -29,94 +30,162 @@ import {
   SunIcon,
   TagIcon,
   UserGroupIcon,
+  PowerIcon,
+  LifebuoyIcon,
+  InboxArrowDownIcon,
+  Cog6ToothIcon,
+  UserCircleIcon,
+
 } from "@heroicons/react/24/solid";
 
-import logo from '../HomePage/assets/logo.jpeg'
+import logo from './assets/logo.jpeg'
 import { Input } from "@material-tailwind/react";
-
-import {
-    CubeTransparentIcon,
-    UserCircleIcon,
-    CodeBracketSquareIcon,
-    Square3Stack3DIcon,
-    Cog6ToothIcon,
-    InboxArrowDownIcon,
-    LifebuoyIcon,
-    PowerIcon,
-    RocketLaunchIcon,
-    Bars2Icon,
-  } from "@heroicons/react/24/solid";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 
 const profileMenuItems = [
-    {
-      label: "My Profile",
-      icon: UserCircleIcon,
-    },
-    {
-      label: "Edit Profile",
-      icon: Cog6ToothIcon,
-    },
-    {
-      label: "Inbox",
-      icon: InboxArrowDownIcon,
-    },
-    {
-      label: "Help",
-      icon: LifebuoyIcon,
-    },
-    {
-      label: "Sign Out",
-      icon: PowerIcon,
-    },
-  ]
+  {
+    label: "Dashboard",
+    icon: UserCircleIcon,
+    link: "/dashboard/home"
+  },
+  {
+    label: "My Profile",
+    icon: UserCircleIcon,
+    link: "/loggedin/profile"
+  },
+  {
+    label: "Edit Profile",
+    icon: Cog6ToothIcon,
+    link: "/loggedin/edit-profile"
+  },
+  {
+    label: "Inbox",
+    icon: InboxArrowDownIcon,
+    link: "/loggedin/inbox"
+  },
+  {
+    label: "Help",
+    icon: LifebuoyIcon,
+    link: "/loggedin/help"
+  },
+  {
+    label: "Sign Out",
+    icon: PowerIcon,
+    link: "/"
+  },
+];
+
+function ProfileMenu() {
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+ 
+  const closeMenu = () => setIsMenuOpen(false);
+  const navigate = useNavigate();
+ 
+  return (
+    <Menu open={isMenuOpen} handler={setIsMenuOpen} placement="bottom-end">
+      <MenuHandler>
+        <Button
+          variant="text"
+          color="blue-gray"
+          className="flex items-center gap-1 rounded-full py-0.5 pr-2 pl-0.5 lg:ml-auto"
+        >
+          <Avatar
+            variant="circular"
+            size="sm"
+            alt="tania andrew"
+            className="border border-gray-900 p-0.5"
+            src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1480&q=80"
+          />
+          <ChevronDownIcon
+            strokeWidth={2.5}
+            className={`h-3 w-3 transition-transform ${
+              isMenuOpen ? "rotate-180" : ""
+            }`}
+          />
+        </Button>
+      </MenuHandler>
+      <MenuList className="p-1">
+        {profileMenuItems.map(({ label, icon, link }, key) => {
+          const isLastItem = key === profileMenuItems.length - 1;
+          return (
+            <MenuItem
+              key={label}
+              onClick={closeMenu}
+              className={`flex items-center gap-2 rounded ${
+                isLastItem
+                  ? "hover:bg-red-500/10 focus:bg-red-500/10 active:bg-red-500/10"
+                  : ""
+              }`}
+            >
+              {React.createElement(icon, {
+                className: `h-4 w-4 ${isLastItem ? "text-red-500" : ""}`,
+                strokeWidth: 2,
+              })}
+              <Typography
+                as="span"
+                variant="small"
+                className="font-normal"
+                color={isLastItem ? "red" : "inherit"}
+                onClick={navigate.bind(null, link)}
+              >
+                {label}
+              </Typography>
+            </MenuItem>
+          );
+        })}
+      </MenuList>
+    </Menu>
+  );
+}
  
 const navListMenuItems = [
   {
-    title: "Products",
-    description: "Find the perfect solution for your needs.",
-    icon: SquaresPlusIcon,
+    title: "Courses",
+    description: "Discover a wide range of courses to enhance your skills.",
+    icon: RectangleGroupIcon,
   },
   {
     title: "About Us",
-    description: "Meet and learn about our dedication",
+    description: "Learn more about our mission and values.",
     icon: UserGroupIcon,
   },
   {
     title: "Blog",
-    description: "Find the perfect solution for your needs.",
+    description: "Read articles and insights from industry experts.",
     icon: Bars4Icon,
   },
   {
-    title: "Services",
-    description: "Learn how we can help you achieve your goals.",
+    title: "Tutoring",
+    description: "Get personalized help from our experienced tutors.",
     icon: SunIcon,
   },
   {
     title: "Support",
-    description: "Reach out to us for assistance or inquiries",
+    description: "Reach out to us for any assistance or inquiries.",
     icon: GlobeAmericasIcon,
   },
   {
     title: "Contact",
-    description: "Find the perfect solution for your needs.",
+    description: "Get in touch with us for more information.",
     icon: PhoneIcon,
   },
   {
     title: "News",
-    description: "Read insightful articles, tips, and expert opinions.",
+    description: "Stay updated with the latest news and events.",
     icon: NewspaperIcon,
   },
   {
-    title: "Products",
-    description: "Find the perfect solution for your needs.",
-    icon: RectangleGroupIcon,
+    title: "Library",
+    description: "Access a vast collection of educational resources.",
+    icon: SquaresPlusIcon,
   },
   {
     title: "Special Offers",
-    description: "Explore limited-time deals and bundles",
+    description: "Explore our latest discounts and deals.",
     icon: TagIcon,
   },
 ];
+
  
 function NavListMenu() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -224,69 +293,8 @@ function NavList() {
     </List>
   );
 }
-
-function ProfileMenu() {
-    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-   
-    const closeMenu = () => setIsMenuOpen(false);
-   
-    return (
-      <Menu open={isMenuOpen} handler={setIsMenuOpen} placement="bottom-end">
-        <MenuHandler>
-          <Button
-            variant="text"
-            color="blue-gray"
-            className="flex items-center gap-1 rounded-full py-0.5 pr-2 pl-0.5 lg:ml-auto"
-          >
-            <Avatar
-              variant="circular"
-              size="sm"
-              alt="tania andrew"
-              className="border border-gray-900 p-0.5"
-              src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1480&q=80"
-            />
-            <ChevronDownIcon
-              strokeWidth={2.5}
-              className={`h-3 w-3 transition-transform ${
-                isMenuOpen ? "rotate-180" : ""
-              }`}
-            />
-          </Button>
-        </MenuHandler>
-        <MenuList className="p-1">
-          {profileMenuItems.map(({ label, icon }, key) => {
-            const isLastItem = key === profileMenuItems.length - 1;
-            return (
-              <MenuItem
-                key={label}
-                onClick={closeMenu}
-                className={`flex items-center gap-2 rounded ${
-                  isLastItem
-                    ? "hover:bg-red-500/10 focus:bg-red-500/10 active:bg-red-500/10"
-                    : ""
-                }`}
-              >
-                {React.createElement(icon, {
-                  className: `h-4 w-4 ${isLastItem ? "text-red-500" : ""}`,
-                  strokeWidth: 2,
-                })}
-                <Typography
-                  as="span"
-                  variant="small"
-                  className="font-normal"
-                  color={isLastItem ? "red" : "inherit"}
-                >
-                  {label}
-                </Typography>
-              </MenuItem>
-            );
-          })}
-        </MenuList>
-      </Menu>
-    );
-  }
  
-function DashHeader() {
+function Header() {
   const [openNav, setOpenNav] = React.useState(false);
  
   React.useEffect(() => {
@@ -316,12 +324,54 @@ function DashHeader() {
         <div className="w-72">
           <Input label="Search Courses" icon={<i className="fas fa-search" />} />
         </div>
+
         
-        <ProfileMenu/>
+ 
+
+
         
+        
+        <div className="hidden lg:block" id="nav">
+          <NavList />
+        </div>
+        <div className="hidden gap-2 lg:flex">
+          
+          {/* <ButtonComp to="/Signup">
+            <Button variant="gradient" size="sm">
+              Dashboard
+            </Button>
+          </ButtonComp> */}
+          <ButtonComp to="/Login">
+            {/* <Button variant="text" size="sm" color="blue-gray">
+              Log In
+            </Button> */}
+            <ProfileMenu />
+          </ButtonComp>
+        </div>
+        <IconButton
+          variant="text"
+          color="blue-gray"
+          className="lg:hidden"
+          onClick={() => setOpenNav(!openNav)}
+        >
+          {openNav ? (
+            <XMarkIcon className="h-6 w-6" strokeWidth={2} />
+          ) : (
+            <Bars3Icon className="h-6 w-6" strokeWidth={2} />
+          )}
+        </IconButton>
       </div>
+      <Collapse open={openNav}>
+        <NavList />
+        <div className="flex w-full flex-nowrap items-center gap-2 lg:hidden">
+          <Button variant="gradient" size="sm" fullWidth>
+            Dashboard
+          </Button>
+          <ProfileMenu />
+        </div>
+      </Collapse>
     </Navbar>
   );
 }
 
-export default DashHeader;
+export default Header;

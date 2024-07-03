@@ -46,7 +46,7 @@ function Home() {
 
       </div>
       <Fade duration={3000}>
-        <img src={moto_image} alt="moto" className="image hidden lg:block"/>
+        <img src={moto_image} alt="moto" className="image"/>
       </Fade>
       
       

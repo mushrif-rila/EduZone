@@ -1,61 +1,70 @@
-# django_backend/myapp/views.py
 
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import User
-from .serializers import UserSerializer
-import bcrypt
-import jwt
-import datetime
 from django.conf import settings
+from rest_framework.parsers import MultiPartParser, JSONParser
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+import logging
+
+from .models import Profile
+# from .serializers import ProfileSerializer
+from rest_framework import generics
+from .models import Profile
+from .serializers import ProfileSerializer
+
+
+logger = logging.getLogger(__name__)
+
+
+from django.shortcuts import render
+from .models import User
+# Create your views here.
+
+from .serializers import MyTOPS, RegistrationSerializer
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework import generics
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework import status
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTOPS
+
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = RegistrationSerializer
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def protected_view(request):
-    return Response({"message": "This is a protected view"})
+def protectedView(request):
+    output = f"Welcome {request.user}, Authentication Successful"
+    return Response({'response':output}, status=status.HTTP_200_OK)
 
-class RegisterView(APIView):
-    def post(self, request):
-        data = request.data
-        name = data.get('name')
-        email = data.get('email')
-        password = data.get('password')
+@api_view(['GET'])
+def view_all_routes(request):
+    data = [
+        'api/token/refresh/',
+        'api/register/',
+        'api/token/'
+    ]
 
-        if not name or not email or not password:
-            return Response({'msg': 'Please enter all fields'}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(data)
 
-        if User.objects.filter(email=email).exists():
-            return Response({'msg': 'User already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        user = User(name=name, email=email, password=hashed_password)
-        user.save()
+class ProfileDetailView(generics.RetrieveUpdateAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
 
-        return Response({'msg': 'User registered successfully'}, status=status.HTTP_201_CREATED)
+    def get_object(self):
+        return self.request.user.profile
 
-class LoginView(APIView):
-    def post(self, request):
-        data = request.data
-        email = data.get('email')
-        password = data.get('password')
-
-        if not email or not password:
-            return Response({'msg': 'Please enter all fields'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response({'msg': 'User does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
-            token = jwt.encode({
-                'user_id': user.id,
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-            }, settings.SECRET_KEY, algorithm='HS256')
-
-            return Response({'token': token}, status=status.HTTP_200_OK)
-        else:
-            return Response({'msg': 'Invalid email or password'}, status=status.HTTP_400_BAD_REQUEST)
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)

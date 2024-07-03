@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
   Navbar,
@@ -28,12 +28,14 @@ import {
 } from "../../context/index";
 import { } from 'react-router-dom';
 import AuthService from '../../../authService';
+import AuthContext from '../../../context/AuthContext';
 
 export function DashboardNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const {logoutUser} = useContext(AuthContext)
   const handleLogout = () => {
-    AuthService.logout();
+    logoutUser();
     navigate('/login');
   };
   const [controller, dispatch] = useMaterialTailwindController();
@@ -89,6 +91,24 @@ export function DashboardNavbar() {
           </Typography>
         </div>
         <div className="flex items-center">
+        <Link to="/">
+            <Button
+              // onClick={handleLogout}
+              variant="text"
+              color="blue-gray"
+              className="hidden items-center gap-1 px-4 xl:flex normal-case"
+            >
+              <UserCircleIcon cstrokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
+              Home
+            </Button>
+            <IconButton
+              variant="text"
+              color="blue-gray"
+              className="grid xl:hidden"
+            >
+              <UserCircleIcon cstrokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
+            </IconButton>
+          </Link>
           <div className="mr-auto md:mr-4 md:w-56">
             <Input label="Search" />
           </div>
@@ -107,7 +127,9 @@ export function DashboardNavbar() {
               color="blue-gray"
               className="hidden items-center gap-1 px-4 xl:flex normal-case"
             >
-              <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+              </svg>
               Sign out
             </Button>
             <IconButton
@@ -115,7 +137,9 @@ export function DashboardNavbar() {
               color="blue-gray"
               className="grid xl:hidden"
             >
-              <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
+              </svg>
             </IconButton>
           </Link>
           <Menu>

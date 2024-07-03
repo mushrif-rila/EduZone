@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React from 'react';
 import './HomePage.css';
 import Header from './Header';
 import Home from './Home';
@@ -9,9 +9,7 @@ import Footer from './Footer';
 
 
 
-
-function HomePage() {
-  
+function LoggedHomePage() {
   return (
     
     <div className="homepage">
@@ -26,4 +24,4 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default LoggedHomePage;

@@ -16,16 +16,14 @@
     "react": "^18.2.0",
     "react-apexcharts": "^1.4.1",
     "react-awesome-reveal": "^4.2.11",
-    "react-bootstrap": "^2.10.1",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3",
     "react-scripts": "^5.0.1",
+    "sweetalert2": "^11.12.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "concurrently \"npm run start-react\" \"npm run start-django\"",
-    "start-react": "react-scripts start",
-    "start-django": "cd ../django_backend && python manage.py runserver",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
