@@ -64,9 +64,17 @@ class RegistrationSerializer(serializers.ModelSerializer):
             user.profile.institute = validated_data['institute']
             user.profile.save()
 
+        if "username" in validated_data:
+            user.profile.profile_username = validated_data['username']
+            user.profile.save()
+
+        if "email" in validated_data:
+            user.profile.profile_email = validated_data['email']
+            user.profile.save()
+
         return user
     
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ['id', 'user', 'full_name', 'bio', 'verified', 'role', 'institute']
+        fields = ['id', 'user', 'full_name', 'bio', 'verified', 'role', 'institute', 'profile_username', 'profile_email']

@@ -33,14 +33,16 @@ function Signup() {
   }, []);
 
   const role = localStorage.getItem('role');
+  const instituteValue = isTeacher ? institute : 'not given';
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     console.log(full_name)
     console.log(email)
     console.log(username)
+    console.log(instituteValue)
 
-    registerUser(full_name, email, username, password, password2, role, institute)
+    registerUser(full_name, email, username, password, password2, role, instituteValue)
     localStorage.removeItem('role')
   }
 

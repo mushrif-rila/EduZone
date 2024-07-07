@@ -11,18 +11,118 @@ import {
   Switch,
   Tooltip,
   Button,
+  Input,
 } from "@material-tailwind/react";
 import {
   HomeIcon,
   ChatBubbleLeftEllipsisIcon,
   Cog6ToothIcon,
   PencilIcon,
+  HandThumbUpIcon,
 } from "@heroicons/react/24/solid";
 import { Link } from "react-router-dom";
 import { ProfileInfoCard, MessageCard } from "../../widgets/cards/index";
 import { platformSettingsData, conversationsData, projectsData } from "../../data/index";
+import axiosInstance from "../../../context/axiosInstance";
+import { useState, useEffect } from "react";
+
+const swal = require('sweetalert2')
 
 export function Profile() {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isProfileEditing, setIsProfileEditing] = useState(false);
+  const [profile, setProfile] = useState({
+    
+    full_name: '',
+    bio: '',
+    verified: false,
+    role:"",
+    institute:"",
+    profile_username: '',
+    profile_email: '',
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleProfileEditClick = () => {
+    setIsProfileEditing(true);
+  };
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    setIsProfileEditing(false);
+  };
+
+  const saveFullname = (e) => {
+    handleUpdateProfile();
+    handleBlur();
+  };
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axiosInstance.get('/api/profile/');
+        setProfile(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        setLoading(false);
+        setError('Failed to fetch profile. Please login again.');
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const val = type === 'checkbox' ? checked : value;
+    setProfile({
+      ...profile,
+      [name]: val,
+    });
+  };
+
+  const handleUpdateProfile = async () => {
+    try {
+      console.log('Updating profile with:', profile);
+      const response = await axiosInstance.patch('/api/profile/', profile);
+      setProfile(response.data);
+      swal.fire({
+        title: "Profile updated successfully!",
+        icon: "success",
+        toast: true,
+        timer: 2000,
+        position: 'top-right',
+        timerProgressBar: true,
+        showConfirmButton: false
+    })
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      swal.fire({
+        title: "Failed to update profile.",
+        icon: "error",
+        toast: true,
+        timer: 2000,
+        position: 'top-right',
+        timerProgressBar: true,
+        showConfirmButton: false
+    })
+    }
+    handleBlur();
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
   return (
     <>
       
@@ -38,14 +138,17 @@ export function Profile() {
                 className="rounded-lg shadow-lg shadow-blue-gray-500/40"
               />
               <div>
-                <Typography variant="h5" color="blue-gray" className="mb-1">
-                  Ahamed Dhahlan
-                </Typography>
+                <div className="flex">
+                <Typography variant="h5" color="blue-gray" className="mb-1" onClick={handleEditClick}>
+                    {profile.profile_username}
+                  </Typography>
+
+                </div>
                 <Typography
                   variant="small"
                   className="font-normal text-blue-gray-600"
                 >
-                  Undergraduate
+                  {profile.role}
                 </Typography>
               </div>
             </div>
@@ -98,12 +201,31 @@ export function Profile() {
             </div>
             <ProfileInfoCard
               title="Profile Information"
-              description="Hi, I'm Alec Thompson, Decisions: If you can't decide, the answer is no. If two equally difficult paths, choose the one more painful in the short term (pain avoidance is creating an illusion of equality)."
+              description={isProfileEditing ? 
+                (
+                  <Input label="bio" size="lg" name="bio" value={profile.bio} onChange={handleInputChange} onBlur={handleBlur}/>
+                ):(
+                  <div>
+                  {profile.bio}
+                  </div>
+               
+                )}
               details={{
-                "first name": "Ahamed Dhahlan",
+                "full name": isProfileEditing ? (
+                    <Input
+                        label="Full Name"
+                        size="lg"
+                        name="full_name"
+                        value={profile.full_name}
+                        onChange={handleInputChange}
+                        onBlur={handleBlur}
+                    />
+                ) : (
+                    profile.full_name
+                ),
                 mobile: "(94) 77 95 80 967",
-                email: "alecthompson@mail.com",
-                location: "Sri Lanka",
+                email: profile.profile_email,
+                Institution: profile.institute,
                 social: (
                   <div className="flex items-center gap-4">
                     <i className="fa-brands fa-facebook text-blue-700" />
@@ -112,9 +234,12 @@ export function Profile() {
                   </div>
                 ),
               }}
-              action={
+              action={ !isProfileEditing ?
                 <Tooltip content="Edit Profile">
-                  <PencilIcon className="h-4 w-4 cursor-pointer text-blue-gray-500" />
+                  <PencilIcon className="h-4 w-4 cursor-pointer text-blue-gray-500" onClick={handleProfileEditClick}/>
+                </Tooltip>
+                : <Tooltip content="Save Profile">
+                  <HandThumbUpIcon className="h-4 w-4 cursor-pointer text-blue-gray-500" onClick={handleUpdateProfile}/>
                 </Tooltip>
               }
             />

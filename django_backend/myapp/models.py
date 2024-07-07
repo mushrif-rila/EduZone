@@ -33,7 +33,9 @@ class Profile(models.Model):
     bio = models.CharField(default="", max_length=1000)
     verified = models.BooleanField(default = False)
     role = models.CharField(default="", max_length=100)
-    institute = models.CharField(default="", max_length=100)
+    institute = models.CharField(default="", max_length=100, blank=True, null=True)
+    profile_username = models.CharField(default="", max_length=100)
+    profile_email = models.EmailField(default="")
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
