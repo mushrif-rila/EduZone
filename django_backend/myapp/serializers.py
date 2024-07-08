@@ -77,4 +77,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ['id', 'user', 'full_name', 'bio', 'verified', 'role', 'institute', 'profile_username', 'profile_email']
+        fields = ['id', 'user', 'full_name', 'bio', 'verified', 'role', 'institute', 'profile_username', 'profile_email', 'profile_img']
+
+    def update(self, instance, validated_data):
+        # Check if the profile image is being removed
+        if 'profile_img' in self.initial_data and self.initial_data['profile_img'] == '':
+            instance.profile_img.delete(save=False)
+            validated_data['profile_img'] = None
+        return super().update(instance, validated_data)

@@ -24,7 +24,7 @@ import { Link } from "react-router-dom";
 import { ProfileInfoCard, MessageCard } from "../../widgets/cards/index";
 import { platformSettingsData, conversationsData, projectsData } from "../../data/index";
 import axiosInstance from "../../../context/axiosInstance";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const swal = require('sweetalert2')
 
@@ -40,9 +40,11 @@ export function Profile() {
     institute:"",
     profile_username: '',
     profile_email: '',
+    profile_img: '',
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const fileInputRef = useRef(null);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -53,8 +55,24 @@ export function Profile() {
   };
 
   const handleBlur = () => {
-    setIsEditing(false);
-    setIsProfileEditing(false);
+    if (isEditing || isProfileEditing) {
+      setIsEditing(false);
+      setIsProfileEditing(false);
+    }
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('profile_img', file);
+      for (const key in profile) {
+        if (profile.hasOwnProperty(key)) {
+          formData.append(key, profile[key]);
+        }
+      }
+      await handleUpdateProfile(formData);
+    }
   };
 
   const saveFullname = (e) => {
@@ -88,6 +106,7 @@ export function Profile() {
   };
 
   const handleUpdateProfile = async () => {
+    setIsProfileEditing(false); 
     try {
       console.log('Updating profile with:', profile);
       const response = await axiosInstance.patch('/api/profile/', profile);
@@ -101,6 +120,7 @@ export function Profile() {
         timerProgressBar: true,
         showConfirmButton: false
     })
+    
     } catch (error) {
       console.error('Error updating profile:', error);
       swal.fire({
@@ -113,7 +133,6 @@ export function Profile() {
         showConfirmButton: false
     })
     }
-    handleBlur();
   };
 
   if (loading) {
@@ -129,14 +148,27 @@ export function Profile() {
       <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100" id="profile-card">
         <CardBody className="p-4">
           <div className="mb-10 flex items-center justify-between flex-wrap gap-6">
+          <div className="flex items-center gap-6">
+            
             <div className="flex items-center gap-6">
-              <Avatar
-                src="/img/bruce-mars.jpeg"
-                alt="bruce-mars"
-                size="xl"
-                variant="rounded"
-                className="rounded-lg shadow-lg shadow-blue-gray-500/40"
-              />
+            <Avatar
+                  src={profile.profile_img || "/img/bruce-mars.jpeg"}
+                  alt={profile.profile_username}
+                  size="xl"
+                  variant="rounded"
+                  className="rounded-lg shadow-lg shadow-blue-gray-500/40"
+                  onClick={() => fileInputRef.current.click()}
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                  name="profile_img"
+                  style={{ display: 'none' }}
+                />
+          </div>
+
               <div>
                 <div className="flex">
                 <Typography variant="h5" color="blue-gray" className="mb-1" onClick={handleEditClick}>
@@ -233,16 +265,23 @@ export function Profile() {
                     <i className="fa-brands fa-instagram text-purple-500" />
                   </div>
                 ),
+                save : (<Button variant="text" size="sm" color="red" onClick={handleUpdateProfile}>
+                  save
+                </Button>)
               }}
               action={ !isProfileEditing ?
+                <div style={{display:"flex"}} >
                 <Tooltip content="Edit Profile">
-                  <PencilIcon className="h-4 w-4 cursor-pointer text-blue-gray-500" onClick={handleProfileEditClick}/>
+                  <PencilIcon className="h-4 w-4 cursor-pointer text-blue-gray-500 mt-2 mr-2" onClick={handleProfileEditClick} />
                 </Tooltip>
+                
+              </div>
                 : <Tooltip content="Save Profile">
-                  <HandThumbUpIcon className="h-4 w-4 cursor-pointer text-blue-gray-500" onClick={handleUpdateProfile}/>
+                  <HandThumbUpIcon className="h-4 w-4 cursor-pointer text-blue-gray-500" onClick={handleBlur}/>
                 </Tooltip>
               }
             />
+            
             <div>
               <Typography variant="h6" color="blue-gray" className="mb-3">
                 Platform Settings

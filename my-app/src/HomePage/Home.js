@@ -33,7 +33,7 @@ function Home() {
             <Fade duration={2000} direction="up">
   
             <div className="flex w-max gap-8" id="signlog">
-              <ButtonComp to="/Signup">
+              <ButtonComp to="/role">
                 <Button variant="gradient" size="lg">SignUp</Button>
               </ButtonComp>
               <ButtonComp to="/Login">

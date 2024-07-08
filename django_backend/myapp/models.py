@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
+from django.dispatch import receiver
 # Create your models here.
 
 class User(AbstractUser):
@@ -36,13 +37,25 @@ class Profile(models.Model):
     institute = models.CharField(default="", max_length=100, blank=True, null=True)
     profile_username = models.CharField(default="", max_length=100)
     profile_email = models.EmailField(default="")
+    profile_img = models.ImageField(upload_to='profile_images/', null=True, blank=True)
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
 
 def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+    try:
+        instance.profile.save()
+    except Profile.DoesNotExist:
+        Profile.objects.create(user=instance)
 
 post_save.connect(create_user_profile, sender=User)
 post_save.connect(save_user_profile, sender=User)
+
+
+@receiver(pre_delete, sender=User)
+def delete_user_profile(sender, instance, **kwargs):
+    try:
+        instance.profile.delete()
+    except Profile.DoesNotExist:
+        pass
