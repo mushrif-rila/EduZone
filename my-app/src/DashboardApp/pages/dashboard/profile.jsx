@@ -1,43 +1,23 @@
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  Card,
-  CardBody,
-  CardHeader,
-  CardFooter,
-  Avatar,
-  Typography,
-  Tabs,
-  TabsHeader,
-  Tab,
-  Switch,
-  Tooltip,
-  Button,
-  Input,
-} from "@material-tailwind/react";
-import {
-  HomeIcon,
-  ChatBubbleLeftEllipsisIcon,
-  Cog6ToothIcon,
-  PencilIcon,
-  HandThumbUpIcon,
-} from "@heroicons/react/24/solid";
-import { Link } from "react-router-dom";
-import { ProfileInfoCard, MessageCard } from "../../widgets/cards/index";
-import { platformSettingsData, conversationsData, projectsData } from "../../data/index";
-import axiosInstance from "../../../context/axiosInstance";
-import { useState, useEffect, useRef } from "react";
-
-const swal = require('sweetalert2')
+  Card, CardBody, Avatar, Typography, Tabs, TabsHeader, Tab, Switch, Tooltip, Button, Input, CardHeader, CardFooter
+} from '@material-tailwind/react';
+import { HomeIcon, ChatBubbleLeftEllipsisIcon, Cog6ToothIcon, PencilIcon, HandThumbUpIcon } from '@heroicons/react/24/solid';
+import { Link } from 'react-router-dom';
+import { ProfileInfoCard, MessageCard } from '../../widgets/cards/index';
+import { platformSettingsData, conversationsData, projectsData } from '../../data/index';
+import axiosInstance from '../../../context/axiosInstance';
+const swal = require('sweetalert2');
 
 export function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [isProfileEditing, setIsProfileEditing] = useState(false);
   const [profile, setProfile] = useState({
-    
     full_name: '',
     bio: '',
     verified: false,
-    role:"",
-    institute:"",
+    role: '',
+    institute: '',
     profile_username: '',
     profile_email: '',
     profile_img: '',
@@ -58,20 +38,6 @@ export function Profile() {
     if (isEditing || isProfileEditing) {
       setIsEditing(false);
       setIsProfileEditing(false);
-    }
-  };
-
-  const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('profile_img', file);
-      for (const key in profile) {
-        if (profile.hasOwnProperty(key)) {
-          formData.append(key, profile[key]);
-        }
-      }
-      await handleUpdateProfile(formData);
     }
   };
 
@@ -105,33 +71,60 @@ export function Profile() {
     });
   };
 
-  const handleUpdateProfile = async () => {
-    setIsProfileEditing(false); 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('profile_img', file);
+      for (const key in profile) {
+        if (profile.hasOwnProperty(key) && key !== 'profile_img') {
+          formData.append(key, profile[key]);
+        }
+      }
+      handleUpdateProfile(formData);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    const formData = new FormData();
+    formData.append('profile_img', '');
+    for (const key in profile) {
+      if (profile.hasOwnProperty(key) && key !== 'profile_img') {
+        formData.append(key, profile[key]);
+      }
+    }
+    handleUpdateProfile(formData);
+  };
+
+  const handleUpdateProfile = async (data) => {
+    setIsProfileEditing(false);
     try {
-      console.log('Updating profile with:', profile);
-      const response = await axiosInstance.patch('/api/profile/', profile);
+      const response = await axiosInstance.patch('/api/profile/', data || profile, {
+        headers: {
+          'Content-Type': data ? 'multipart/form-data' : 'application/json',
+        },
+      });
       setProfile(response.data);
       swal.fire({
-        title: "Profile updated successfully!",
-        icon: "success",
+        title: 'Profile updated successfully!',
+        icon: 'success',
         toast: true,
         timer: 2000,
         position: 'top-right',
         timerProgressBar: true,
-        showConfirmButton: false
-    })
-    
+        showConfirmButton: false,
+      });
     } catch (error) {
       console.error('Error updating profile:', error);
       swal.fire({
-        title: "Failed to update profile.",
-        icon: "error",
+        title: 'Failed to update profile.',
+        icon: 'error',
         toast: true,
         timer: 2000,
         position: 'top-right',
         timerProgressBar: true,
-        showConfirmButton: false
-    })
+        showConfirmButton: false,
+      });
     }
   };
 
@@ -142,17 +135,16 @@ export function Profile() {
   if (error) {
     return <div>{error}</div>;
   }
+
   return (
     <>
-      
       <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100" id="profile-card">
         <CardBody className="p-4">
           <div className="mb-10 flex items-center justify-between flex-wrap gap-6">
-          <div className="flex items-center gap-6">
-            
             <div className="flex items-center gap-6">
-            <Avatar
-                  src={profile.profile_img || "/img/bruce-mars.jpeg"}
+              <div className="flex items-center gap-6">
+                <Avatar
+                  src={profile.profile_img || '/img/bruce-mars.jpeg'}
                   alt={profile.profile_username}
                   size="xl"
                   variant="rounded"
@@ -167,19 +159,20 @@ export function Profile() {
                   name="profile_img"
                   style={{ display: 'none' }}
                 />
-          </div>
-
+                
+                
+              </div>
               <div>
                 <div className="flex">
-                <Typography variant="h5" color="blue-gray" className="mb-1" onClick={handleEditClick}>
+                  <Typography variant="h5" color="blue-gray" className="mb-1" onClick={handleEditClick}>
                     {profile.profile_username}
                   </Typography>
+                  <Button variant="text" size="sm" color="red" onClick={handleRemoveImage}>
+                  Remove
 
+                  </Button>
                 </div>
-                <Typography
-                  variant="small"
-                  className="font-normal text-blue-gray-600"
-                >
+                <Typography variant="small" className="font-normal text-blue-gray-600">
                   {profile.role}
                 </Typography>
               </div>
@@ -203,7 +196,7 @@ export function Profile() {
               </Tabs>
             </div>
           </div>
-          <div className="gird-cols-1 mb-12 grid gap-12 px-4 lg:grid-cols-2 xl:grid-cols-3">
+          <div className="grid-cols-1 mb-12 grid gap-12 px-4 lg:grid-cols-2 xl:grid-cols-3">
             <div>
               <Typography variant="h6" color="blue-gray" className="mb-3">
                 Platform Settings
@@ -222,7 +215,7 @@ export function Profile() {
                           label={label}
                           defaultChecked={checked}
                           labelProps={{
-                            className: "text-sm font-normal text-blue-gray-500",
+                            className: 'text-sm font-normal text-blue-gray-500',
                           }}
                         />
                       ))}
@@ -233,29 +226,20 @@ export function Profile() {
             </div>
             <ProfileInfoCard
               title="Profile Information"
-              description={isProfileEditing ? 
-                (
-                  <Input label="bio" size="lg" name="bio" value={profile.bio} onChange={handleInputChange} onBlur={handleBlur}/>
-                ):(
-                  <div>
-                  {profile.bio}
-                  </div>
-               
-                )}
-              details={{
-                "full name": isProfileEditing ? (
-                    <Input
-                        label="Full Name"
-                        size="lg"
-                        name="full_name"
-                        value={profile.full_name}
-                        onChange={handleInputChange}
-                        onBlur={handleBlur}
-                    />
+              description={
+                isProfileEditing ? (
+                  <Input label="bio" size="lg" name="bio" value={profile.bio} onChange={handleInputChange} onBlur={handleBlur} />
                 ) : (
-                    profile.full_name
+                  <div>{profile.bio}</div>
+                )
+              }
+              details={{
+                'full name': isProfileEditing ? (
+                  <Input label="Full Name" size="lg" name="full_name" value={profile.full_name} onChange={handleInputChange} onBlur={handleBlur} />
+                ) : (
+                  profile.full_name
                 ),
-                mobile: "(94) 77 95 80 967",
+                mobile: '(94) 77 95 80 967',
                 email: profile.profile_email,
                 Institution: profile.institute,
                 social: (
@@ -265,23 +249,19 @@ export function Profile() {
                     <i className="fa-brands fa-instagram text-purple-500" />
                   </div>
                 ),
-                save : (<Button variant="text" size="sm" color="red" onClick={handleUpdateProfile}>
-                  save
-                </Button>)
               }}
-              action={ !isProfileEditing ?
-                <div style={{display:"flex"}} >
-                <Tooltip content="Edit Profile">
-                  <PencilIcon className="h-4 w-4 cursor-pointer text-blue-gray-500 mt-2 mr-2" onClick={handleProfileEditClick} />
-                </Tooltip>
-                
-              </div>
-                : <Tooltip content="Save Profile">
-                  <HandThumbUpIcon className="h-4 w-4 cursor-pointer text-blue-gray-500" onClick={handleBlur}/>
-                </Tooltip>
+              action={
+                <div style={{ display: 'flex' }}>
+                  <Tooltip content="Edit Profile">
+                    <PencilIcon className="h-4 w-4 cursor-pointer text-blue-gray-500 mt-2 mr-2" onClick={handleProfileEditClick} />
+                  </Tooltip>
+                  <Button variant="text" size="sm" color="red" onClick={() => handleUpdateProfile()}>
+                    Save
+                  </Button>
+                  
+                </div>
               }
             />
-            
             <div>
               <Typography variant="h6" color="blue-gray" className="mb-3">
                 Platform Settings
@@ -293,7 +273,7 @@ export function Profile() {
                     {...props}
                     action={
                       <Button variant="text" size="sm">
-                        reply
+                        Reply
                       </Button>
                     }
                   />
@@ -305,73 +285,42 @@ export function Profile() {
             <Typography variant="h6" color="blue-gray" className="mb-2">
               Projects
             </Typography>
-            <Typography
-              variant="small"
-              className="font-normal text-blue-gray-500"
-            >
+            <Typography variant="small" className="font-normal text-blue-gray-500">
               Architects design houses
             </Typography>
             <div className="mt-6 grid grid-cols-1 gap-12 md:grid-cols-2 xl:grid-cols-4">
-              {projectsData.map(
-                ({ img, title, description, tag, route, members }) => (
-                  <Card key={title} color="transparent" shadow={false}>
-                    <CardHeader
-                      floated={false}
-                      color="gray"
-                      className="mx-0 mt-0 mb-4 h-64 xl:h-40"
-                    >
-                      <img
-                        src={img}
-                        alt={title}
-                        className="h-full w-full object-cover"
-                      />
-                    </CardHeader>
-                    <CardBody className="py-0 px-1">
-                      <Typography
-                        variant="small"
-                        className="font-normal text-blue-gray-500"
-                      >
-                        {tag}
-                      </Typography>
-                      <Typography
-                        variant="h5"
-                        color="blue-gray"
-                        className="mt-1 mb-2"
-                      >
-                        {title}
-                      </Typography>
-                      <Typography
-                        variant="small"
-                        className="font-normal text-blue-gray-500"
-                      >
-                        {description}
-                      </Typography>
-                    </CardBody>
-                    <CardFooter className="mt-6 flex items-center justify-between py-0 px-1">
-                      <Link to={route}>
-                        <Button variant="outlined" size="sm">
-                          view project
-                        </Button>
-                      </Link>
-                      <div>
-                        {members.map(({ img, name }, key) => (
-                          <Tooltip key={name} content={name}>
-                            <Avatar
-                              src={img}
-                              alt={name}
-                              size="xs"
-                              variant="circular"
-                              className={`cursor-pointer border-2 border-white ${
-                                key === 0 ? "" : "-ml-2.5"
-                              }`}
-                            />
-                          </Tooltip>
-                        ))}
-                      </div>
-                    </CardFooter>
-                  </Card>
-                )
-              )}
+              {projectsData.map(({ img, title, description, tag, route, members }) => (
+                <Card key={title} color="transparent" shadow={false}>
+                  <CardHeader floated={false} color="gray" className="mx-0 mt-0 mb-4 h-64 xl:h-40">
+                    <img src={img} alt={title} className="h-full w-full object-cover" />
+                  </CardHeader>
+                  <CardBody className="py-0 px-1">
+                    <Typography variant="small" className="font-normal text-blue-gray-500">
+                      {tag}
+                    </Typography>
+                    <Typography variant="h5" color="blue-gray" className="mt-1 mb-2">
+                      {title}
+                    </Typography>
+                    <Typography variant="small" className="font-normal text-blue-gray-500">
+                      {description}
+                    </Typography>
+                  </CardBody>
+                  <CardFooter className="mt-6 flex items-center justify-between py-0 px-1">
+                    <Link to={route}>
+                      <Button variant="outlined" size="sm">
+                        View Project
+                      </Button>
+                    </Link>
+                    <div>
+                      {members.map(({ img, name }, key) => (
+                        <Tooltip key={name} content={name}>
+                          <Avatar src={img} alt={name} size="xs" variant="circular" className={`cursor-pointer border-2 border-white ${key === 0 ? '' : '-ml-2.5'}`} />
+                        </Tooltip>
+                      ))}
+                    </div>
+                  </CardFooter>
+                </Card>
+              ))}
             </div>
           </div>
         </CardBody>
