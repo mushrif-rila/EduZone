@@ -10,7 +10,7 @@ import Footer from './Footer';
 
 
 
-function HomePage() {
+function LogoutHomePage() {
   
   return (
     
@@ -26,4 +26,4 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default LogoutHomePage;
