@@ -1,3 +1,5 @@
+#models.py
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db.models.signals import post_save, pre_delete
@@ -28,6 +30,12 @@ class User(AbstractUser):
     def profile(self):
         profile = Profile.objects.get(user=self)
 
+
+
+class Profile_img(models.Model):
+    profile_img = models.ImageField(upload_to='profile_images/')
+
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     full_name = models.CharField(default="", max_length=100)
@@ -37,7 +45,8 @@ class Profile(models.Model):
     institute = models.CharField(default="", max_length=100, blank=True, null=True)
     profile_username = models.CharField(default="", max_length=100)
     profile_email = models.EmailField(default="")
-    profile_img = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+    profile_img = models.ForeignKey(Profile_img, on_delete=models.CASCADE, null=True, blank=True)
+    
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
@@ -59,3 +68,43 @@ def delete_user_profile(sender, instance, **kwargs):
         instance.profile.delete()
     except Profile.DoesNotExist:
         pass
+
+class Course(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    teacher = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='courses')
+
+class Subheading(models.Model):
+    title = models.CharField(max_length=100)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='subheadings')
+
+class Video(models.Model):
+    title = models.CharField(max_length=100)
+    file = models.FileField(upload_to='videos/')
+    subheading = models.ForeignKey(Subheading, on_delete=models.CASCADE, related_name='videos')
+
+    def __str__(self):
+        return self.title
+
+class Document(models.Model):
+    title = models.CharField(max_length=100)
+    file = models.FileField(upload_to='documents/')
+    subheading = models.ForeignKey(Subheading, on_delete=models.CASCADE, related_name='documents')
+
+    def __str__(self):
+        return self.title
+
+class Enrollment(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
+    student = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='enrollments')
+
+    def __str__(self):
+        return f"{self.student.user.username} enrolled in {self.course.title}"
+    
+
+class Notification(models.Model):
+    message = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.message

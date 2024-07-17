@@ -12,19 +12,11 @@ const swal = require('sweetalert2');
 export function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [isProfileEditing, setIsProfileEditing] = useState(false);
-  const [profile, setProfile] = useState({
-    full_name: '',
-    bio: '',
-    verified: false,
-    role: '',
-    institute: '',
-    profile_username: '',
-    profile_email: '',
-    profile_img: '',
-  });
+  const [profile, setProfile] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -41,21 +33,26 @@ export function Profile() {
     }
   };
 
-  const saveFullname = (e) => {
-    handleUpdateProfile();
-    handleBlur();
-  };
-
   useEffect(() => {
     const fetchProfile = async () => {
-      try {
-        const response = await axiosInstance.get('/api/profile/');
-        setProfile(response.data);
+      const authTokens = localStorage.getItem('authTokens'); 
+      const tokens = JSON.parse(authTokens);
+      const token = tokens.access;
+
+      const response = await fetch('http://localhost:8000/api/profile/', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProfile(data);
         setLoading(false);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
+      } else {
+        console.error('Failed to fetch profile');
         setLoading(false);
-        setError('Failed to fetch profile. Please login again.');
       }
     };
 
@@ -63,68 +60,100 @@ export function Profile() {
   }, []);
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    const val = type === 'checkbox' ? checked : value;
+    const { name, value } = e.target;
     setProfile({
       ...profile,
-      [name]: val,
+      [name]: value,
     });
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const formData = new FormData();
-      formData.append('profile_img', file);
-      for (const key in profile) {
-        if (profile.hasOwnProperty(key) && key !== 'profile_img') {
-          formData.append(key, profile[key]);
-        }
-      }
-      handleUpdateProfile(formData);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      setProfile({
+        ...profile,
+        profile_img: file,
+      });
+      handleUpdateProfile(file);
     }
   };
 
+  
+
   const handleRemoveImage = () => {
+    setProfile({
+      ...profile,
+      profile_img: '',
+    });
+    setImagePreview(null);
+  };
+
+  const handleUpdateProfile = async (image) => {
+    setIsProfileEditing(false);
+
+    const authTokens = localStorage.getItem('authTokens'); 
+    const tokens = JSON.parse(authTokens);
+    const token = tokens.access;
+
     const formData = new FormData();
-    formData.append('profile_img', '');
+
+    
+    
     for (const key in profile) {
-      if (profile.hasOwnProperty(key) && key !== 'profile_img') {
+      if (key === 'profile_img' && profile[key] && typeof profile[key] !== 'string') {
+        formData.append(key, profile[key]);
+      } else {
         formData.append(key, profile[key]);
       }
     }
-    handleUpdateProfile(formData);
-  };
 
-  const handleUpdateProfile = async (data) => {
-    setIsProfileEditing(false);
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}: ${value}`);
+    }
+
     try {
-      const response = await axiosInstance.patch('/api/profile/', data || profile, {
+      const response = await fetch('http://localhost:8000/api/profile/', {
+        method: 'PUT',
         headers: {
-          'Content-Type': data ? 'multipart/form-data' : 'application/json',
+          'Authorization': `Bearer ${token}`
         },
+        body: formData
       });
-      setProfile(response.data);
-      swal.fire({
-        title: 'Profile updated successfully!',
-        icon: 'success',
-        toast: true,
-        timer: 2000,
-        position: 'top-right',
-        timerProgressBar: true,
-        showConfirmButton: false,
-      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProfile(data);
+
+        swal.fire({
+          title: 'Profile updated successfully!',
+          icon: 'success',
+          toast: true,
+          timer: 2000,
+          position: 'top-right',
+          timerProgressBar: true,
+          showConfirmButton: false,
+        });
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to save Profile:', errorData);
+
+        swal.fire({
+          title: 'Failed to update profile.',
+          icon: 'error',
+          toast: true,
+          timer: 2000,
+          position: 'top-right',
+          timerProgressBar: true,
+          showConfirmButton: false,
+        });
+      }
     } catch (error) {
-      console.error('Error updating profile:', error);
-      swal.fire({
-        title: 'Failed to update profile.',
-        icon: 'error',
-        toast: true,
-        timer: 2000,
-        position: 'top-right',
-        timerProgressBar: true,
-        showConfirmButton: false,
-      });
+      console.error('Error during save Profile:', error);
     }
   };
 
@@ -144,7 +173,7 @@ export function Profile() {
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-6">
                 <Avatar
-                  src={profile.profile_img || '/img/bruce-mars.jpeg'}
+                  src={imagePreview || profile.profile_img || '/img/bruce-mars.jpeg'}
                   alt={profile.profile_username}
                   size="xl"
                   variant="rounded"
@@ -159,8 +188,6 @@ export function Profile() {
                   name="profile_img"
                   style={{ display: 'none' }}
                 />
-                
-                
               </div>
               <div>
                 <div className="flex">
@@ -168,8 +195,7 @@ export function Profile() {
                     {profile.profile_username}
                   </Typography>
                   <Button variant="text" size="sm" color="red" onClick={handleRemoveImage}>
-                  Remove
-
+                    Remove
                   </Button>
                 </div>
                 <Typography variant="small" className="font-normal text-blue-gray-600">
@@ -199,7 +225,7 @@ export function Profile() {
           <div className="grid-cols-1 mb-12 grid gap-12 px-4 lg:grid-cols-2 xl:grid-cols-3">
             <div>
               <Typography variant="h6" color="blue-gray" className="mb-3">
-                Platform Settings
+                Notification settings
               </Typography>
               <div className="flex flex-col gap-12">
                 {platformSettingsData.map(({ title, options }) => (
@@ -228,20 +254,24 @@ export function Profile() {
               title="Profile Information"
               description={
                 isProfileEditing ? (
-                  <Input label="bio" size="lg" name="bio" value={profile.bio} onChange={handleInputChange} onBlur={handleBlur} />
+                  <Input label="Bio" size="lg" name="bio" value={profile.bio} onChange={handleInputChange} onBlur={handleBlur} />
                 ) : (
                   <div>{profile.bio}</div>
                 )
               }
               details={{
-                'full name': isProfileEditing ? (
+                'Full Name': isProfileEditing ? (
                   <Input label="Full Name" size="lg" name="full_name" value={profile.full_name} onChange={handleInputChange} onBlur={handleBlur} />
                 ) : (
                   profile.full_name
                 ),
-                mobile: '(94) 77 95 80 967',
-                email: profile.profile_email,
-                Institution: profile.institute,
+                Email: profile.profile_email,
+                Role: profile.role,
+                Institute: isProfileEditing ? (
+                  <Input label="Institute" size="lg" name="institute" value={profile.institute} onChange={handleInputChange} onBlur={handleBlur} />
+                ) : (
+                  profile.institute
+                ),
                 social: (
                   <div className="flex items-center gap-4">
                     <i className="fa-brands fa-facebook text-blue-700" />
@@ -255,16 +285,15 @@ export function Profile() {
                   <Tooltip content="Edit Profile">
                     <PencilIcon className="h-4 w-4 cursor-pointer text-blue-gray-500 mt-2 mr-2" onClick={handleProfileEditClick} />
                   </Tooltip>
-                  <Button variant="text" size="sm" color="red" onClick={() => handleUpdateProfile()}>
+                  <Button variant="text" size="sm" color="red" onClick={handleUpdateProfile}>
                     Save
                   </Button>
-                  
                 </div>
               }
             />
             <div>
               <Typography variant="h6" color="blue-gray" className="mb-3">
-                Platform Settings
+                Messsages
               </Typography>
               <ul className="flex flex-col gap-6">
                 {conversationsData.map((props) => (

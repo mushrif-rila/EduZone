@@ -1,9 +1,12 @@
-from rest_framework_simplejwt.tokens import Token
+#serializers.py
+
+
 from .models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
-from .models import Profile
+from .models import Profile, Subheading, Course, Enrollment, Video, Document, Profile_img
+from .models import Notification
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -73,8 +76,15 @@ class RegistrationSerializer(serializers.ModelSerializer):
             user.profile.save()
 
         return user
+
+
+class ProfileImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile_img
+        fields = '__all__'
     
 class ProfileSerializer(serializers.ModelSerializer):
+    profile_img = ProfileImageSerializer(required=False)
     class Meta:
         model = Profile
         fields = ['id', 'user', 'full_name', 'bio', 'verified', 'role', 'institute', 'profile_username', 'profile_email', 'profile_img']
@@ -85,3 +95,48 @@ class ProfileSerializer(serializers.ModelSerializer):
             instance.profile_img.delete(save=False)
             validated_data['profile_img'] = None
         return super().update(instance, validated_data)
+    
+    
+class VideoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Video
+        fields = ['id', 'title', 'file', 'subheading']
+
+class DocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Document
+        fields = ['id', 'title', 'file', 'subheading']
+
+class SubheadingSerializer(serializers.ModelSerializer):
+    videos = VideoSerializer(many=True, read_only=True)
+    documents = DocumentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Subheading
+        fields = ['id', 'title', 'videos', 'documents']
+
+class CourseSerializer(serializers.ModelSerializer):
+    subheadings = SubheadingSerializer(many=True, required=False)
+
+    class Meta:
+        model = Course
+        fields = ['id', 'title', 'description', 'teacher', 'subheadings']
+        read_only_fields = ['teacher']
+
+    def create(self, validated_data):
+        subheadings_data = validated_data.pop('subheadings', [])
+        course = Course.objects.create(**validated_data)
+        for subheading_data in subheadings_data:
+            Subheading.objects.create(course=course, **subheading_data)
+        return course
+
+class EnrollmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Enrollment
+        fields = ['id', 'course', 'student']
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['id', 'message', 'created_at']

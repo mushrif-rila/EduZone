@@ -5,10 +5,17 @@ import {
   Card,
   CardHeader,
   CardBody,
+  Button,
+  Textarea,
 } from "@material-tailwind/react";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import { useEffect, useState } from "react";
+import axios from "axios";
+const swal = require('sweetalert2');
 
 export function Notifications() {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
   const [showAlerts, setShowAlerts] = React.useState({
     blue: true,
     green: true,
@@ -23,8 +30,103 @@ export function Notifications() {
   });
   const alerts = ["gray", "green", "orange", "red"];
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const authTokens = localStorage.getItem('authTokens'); 
+      const tokens = JSON.parse(authTokens);
+      const token = tokens.access;
+      await axios.post('http://localhost:8000/api/notifications/', {message}, 
+        {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+       );
+       swal.fire({
+        title: 'Notification added successfully!',
+        icon: 'success',
+        toast: true,
+        timer: 2000,
+        position: 'top-right',
+        timerProgressBar: true,
+        showConfirmButton: false,
+      });
+      setMessage('');
+    } catch (error) {
+      console.error('Error adding notification:', error);
+      swal.fire({
+        title: 'Failed to add notification!',
+        icon: 'error',
+        toast: true,
+        timer: 2000,
+        position: 'top-right',
+        timerProgressBar: true,
+        showConfirmButton: false,
+      });
+    }
+  };
+
+
+  const [notifications, setNotifications] = useState([]);
+  const [notification_loading, setNotification_Loading] = useState(false);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const authTokens = localStorage.getItem('authTokens'); 
+        const tokens = JSON.parse(authTokens);
+        const token = tokens.access;
+        const response = await axios.get('http://localhost:8000/api/notifications/', 
+          {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+        );
+        setNotifications(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
   return (
+    <>
+    
     <div className="mx-auto my-20 flex max-w-screen-lg flex-col gap-8">
+    <Card>
+        <CardHeader
+          color="transparent"
+          floated={false}
+          shadow={false}
+          className="m-0 p-4"
+        >
+          <Typography variant="h5" color="blue-gray">
+            Post a Message
+          </Typography>
+        </CardHeader>
+        <CardBody className="flex flex-col gap-4 p-4">
+        <form onSubmit={handleSubmit}>
+          <Textarea
+           placeholder="Enter notification message"
+           value={message}
+           onChange={(e) => setMessage(e.target.value)}
+           required>
+
+          </Textarea>
+          
+          <br />
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Adding...' : 'Post'}
+          </Button>
+        </form>
+        </CardBody>
+      </Card>
       <Card>
         <CardHeader
           color="transparent"
@@ -37,51 +139,20 @@ export function Notifications() {
           </Typography>
         </CardHeader>
         <CardBody className="flex flex-col gap-4 p-4">
-          {alerts.map((color) => (
+          {notifications.map(notification => (
             <Alert
-              key={color}
-              open={showAlerts[color]}
-              color={color}
-              onClose={() => setShowAlerts((current) => ({ ...current, [color]: false }))}
+              key={notification.id}
+              open={showAlerts["gray"]}
+              color="gray"
+              onClose={() => setShowAlerts((current) => ({ ...current, ["gray"]: false }))}
             >
-              A simple {color} alert with an <a href="#">example link</a>. Give
-              it a click if you like.
-            </Alert>
-          ))}
-        </CardBody>
-      </Card>
-      <Card>
-        <CardHeader
-          color="transparent"
-          floated={false}
-          shadow={false}
-          className="m-0 p-4"
-        >
-          <Typography variant="h5" color="blue-gray">
-            Alerts with Icon
-          </Typography>
-        </CardHeader>
-        <CardBody className="flex flex-col gap-4 p-4">
-          {alerts.map((color) => (
-            <Alert
-              key={color}
-              open={showAlertsWithIcon[color]}
-              color={color}
-              icon={
-                <InformationCircleIcon strokeWidth={2} className="h-6 w-6" />
-              }
-              onClose={() => setShowAlertsWithIcon((current) => ({
-                ...current,
-                [color]: false,
-              }))}
-            >
-              A simple {color} alert with an <a href="#">example link</a>. Give
-              it a click if you like.
+              {notification.message}
             </Alert>
           ))}
         </CardBody>
       </Card>
     </div>
+    </>
   );
 }
 

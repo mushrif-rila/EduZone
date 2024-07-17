@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardHeader,
@@ -9,9 +10,60 @@ import {
   Progress,
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
-import { authorsTableData, projectsTableData } from "../../data/index";
+import { projectsTableData } from "../../data/index";
+import axios from 'axios';
 
 export function Tables() {
+  const [profiles, setProfiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      try {
+        const authTokens = localStorage.getItem('authTokens'); 
+        const tokens = JSON.parse(authTokens);
+        const token = tokens.access;
+
+        const response = await axios.get('http://localhost:8000/api/profiles/', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const filteredProfiles = response.data.filter(profile => profile.role === 'teacher');
+
+        setProfiles(filteredProfiles);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching profiles:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchProfiles();
+  }, []);
+
+  // Define authorsTableData based on loading state
+  let authorsTableData = loading
+    ? [...Array(5)].map((_, index) => ({
+        img: "https://via.placeholder.com/150",
+        name: "Loading...",
+        email: "Loading...",
+        job: ["Loading...", "Loading..."],
+        online: true,
+        date: "23/04/18",
+        key: index.toString() // Add a unique key for each item
+      }))
+    : profiles.map((profile) => ({
+        img: profile.profile_img,
+        name: profile.profile_username,
+        email: profile.profile_email,
+        job: [profile.profile_username, profile.institute],
+        online: true,
+        date: "23/04/18",
+        key: profile.id.toString() // Assuming profile.id is unique and can be used as a key
+      }));
+
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
       <Card>
@@ -40,67 +92,49 @@ export function Tables() {
               </tr>
             </thead>
             <tbody>
-              {authorsTableData.map(
-                ({ img, name, email, job, online, date }, key) => {
-                  const className = `py-3 px-5 ${
-                    key === authorsTableData.length - 1
-                      ? ""
-                      : "border-b border-blue-gray-50"
-                  }`;
-
-                  return (
-                    <tr key={name}>
-                      <td className={className}>
-                        <div className="flex items-center gap-4">
-                          <Avatar src={img} alt={name} size="sm" variant="rounded" />
-                          <div>
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-semibold"
-                            >
-                              {name}
-                            </Typography>
-                            <Typography className="text-xs font-normal text-blue-gray-500">
-                              {email}
-                            </Typography>
-                          </div>
-                        </div>
-                      </td>
-                      <td className={className}>
-                        <Typography className="text-xs font-semibold text-blue-gray-600">
-                          {job[0]}
+              {authorsTableData.map(({ img, name, email, job, online, date, key }) => (
+                <tr key={key}>
+                  <td className={`py-3 px-5 ${key === authorsTableData.length - 1 ? "" : "border-b border-blue-gray-50"}`}>
+                    <div className="flex items-center gap-4">
+                      <Avatar src={img} alt={name} size="sm" variant="rounded" />
+                      <div>
+                        <Typography variant="small" color="blue-gray" className="font-semibold">
+                          {name}
                         </Typography>
                         <Typography className="text-xs font-normal text-blue-gray-500">
-                          {job[1]}
+                          {email}
                         </Typography>
-                      </td>
-                      <td className={className}>
-                        <Chip
-                          variant="gradient"
-                          color={online ? "green" : "blue-gray"}
-                          value={online ? "online" : "offline"}
-                          className="py-0.5 px-2 text-[11px] font-medium w-fit"
-                        />
-                      </td>
-                      <td className={className}>
-                        <Typography className="text-xs font-semibold text-blue-gray-600">
-                          {date}
-                        </Typography>
-                      </td>
-                      <td className={className}>
-                        <Typography
-                          as="a"
-                          href="#"
-                          className="text-xs font-semibold text-blue-gray-600"
-                        >
-                          Edit
-                        </Typography>
-                      </td>
-                    </tr>
-                  );
-                }
-              )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className={`py-3 px-5 ${key === authorsTableData.length - 1 ? "" : "border-b border-blue-gray-50"}`}>
+                    <Typography className="text-xs font-semibold text-blue-gray-600">
+                      {job[0]}
+                    </Typography>
+                    <Typography className="text-xs font-normal text-blue-gray-500">
+                      {job[1]}
+                    </Typography>
+                  </td>
+                  <td className={`py-3 px-5 ${key === authorsTableData.length - 1 ? "" : "border-b border-blue-gray-50"}`}>
+                    <Chip
+                      variant="gradient"
+                      color={online ? "green" : "blue-gray"}
+                      value={online ? "online" : "offline"}
+                      className="py-0.5 px-2 text-[11px] font-medium w-fit"
+                    />
+                  </td>
+                  <td className={`py-3 px-5 ${key === authorsTableData.length - 1 ? "" : "border-b border-blue-gray-50"}`}>
+                    <Typography className="text-xs font-semibold text-blue-gray-600">
+                      {date}
+                    </Typography>
+                  </td>
+                  <td className={`py-3 px-5 ${key === authorsTableData.length - 1 ? "" : "border-b border-blue-gray-50"}`}>
+                    <Typography as="a" href="#" className="text-xs font-semibold text-blue-gray-600">
+                      Edit
+                    </Typography>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </CardBody>

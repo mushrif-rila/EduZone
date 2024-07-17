@@ -1,7 +1,8 @@
 import React from "react";
+import courseImg01 from "../images/web-development.png";
 
 const OnCourseCard = (props) => {
-  const { imgUrl, title, students, rating } = props.item;
+  const { id, title, description, subheadings } = props.item;
 
   const buttonStyle = {
     background: '#000000',
@@ -16,7 +17,7 @@ const OnCourseCard = (props) => {
   return (
     <div className="single__free__course">
       <div className="free__course__img mb-5">
-        <img src={imgUrl} alt="" className="w-100" />
+        <img src={courseImg01} alt="" className="w-100" />
         <button style={buttonStyle }>Continue</button>
       </div>
 
@@ -25,11 +26,11 @@ const OnCourseCard = (props) => {
 
         <div className=" d-flex align-items-center gap-5">
           <span className=" d-flex align-items-center gap-2">
-            <i class="ri-user-line"></i> {students}k
+            <i class="ri-user-line"></i> {description}
           </span>
 
           <span className=" d-flex align-items-center gap-2">
-            <i class="ri-star-fill"></i> {rating}k
+            <i class="ri-star-fill"></i> {subheadings.length} subheadings
           </span>
         </div>
       </div>

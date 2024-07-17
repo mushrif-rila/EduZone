@@ -5,6 +5,8 @@ import courseImg02 from "../images/kids-learning.png";
 import courseImg03 from "../images/seo.png";
 import courseImg04 from "../images/ui-ux.png";
 import OnCourseCard from "./OnCourseCard.jsx";
+import axios from "axios";
+import { useState, useEffect } from "react";
 
 import "./On-course.css";
 
@@ -49,7 +51,38 @@ const headingStyles = {
   fontWeight: 600,
 };
 
+
+
+
 const OnCourse = () => {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const authTokens = localStorage.getItem('authTokens'); 
+        const tokens = JSON.parse(authTokens);
+        const token = tokens.access;
+        const response = await axios.get('http://localhost:8000/api/courses/', 
+          {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        }
+        );
+        setCourses(response.data);
+        setLoading(false);
+      } catch (error) {
+        setError('Error fetching courses.');
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
   return (
     <section style={{ marginTop: '100px' }}>
       <Container>
@@ -58,7 +91,7 @@ const OnCourse = () => {
             <h2 style={headingStyles}>Ongoing Courses</h2>
           </Col>
 
-          {freeCourseData.map((item) => (
+          {courses.map((item) => (
             <Col lg="3" md="4" className="mb-4" key={item.id}>
               <OnCourseCard item={item} />
             </Col>
