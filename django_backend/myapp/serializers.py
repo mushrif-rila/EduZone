@@ -5,8 +5,8 @@ from .models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
-from .models import Profile, Subheading, Course, Enrollment, Video, Document, Profile_img
-from .models import Notification
+from .models import Profile, Course, Enrollment, Profile_img
+from .models import Notification, Course, CourseFile, CourseImage, CourseVideo
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -89,46 +89,71 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['id', 'user', 'full_name', 'bio', 'verified', 'role', 'institute', 'profile_username', 'profile_email', 'profile_img']
 
-    def update(self, instance, validated_data):
-        # Check if the profile image is being removed
-        if 'profile_img' in self.initial_data and self.initial_data['profile_img'] == '':
-            instance.profile_img.delete(save=False)
-            validated_data['profile_img'] = None
-        return super().update(instance, validated_data)
+    # def update(self, instance, validated_data):
+    #     # Check if the profile image is being removed
+    #     if 'profile_img' in self.initial_data and self.initial_data['profile_img'] == '':
+    #         instance.profile_img.delete(save=False)
+    #         validated_data['profile_img'] = None
+    #     return super().update(instance, validated_data)
     
     
-class VideoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Video
-        fields = ['id', 'title', 'file', 'subheading']
+# class VideoSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Video
+#         fields = ['id', 'title', 'file', 'subheading']
 
-class DocumentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Document
-        fields = ['id', 'title', 'file', 'subheading']
+# class DocumentSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Document
+#         fields = ['id', 'title', 'file', 'subheading']
 
-class SubheadingSerializer(serializers.ModelSerializer):
-    videos = VideoSerializer(many=True, read_only=True)
-    documents = DocumentSerializer(many=True, read_only=True)
+# class SubheadingSerializer(serializers.ModelSerializer):
+#     videos = VideoSerializer(many=True, read_only=True)
+#     documents = DocumentSerializer(many=True, read_only=True)
 
+#     class Meta:
+#         model = Subheading
+#         fields = ['id', 'title', 'videos', 'documents']
+
+# class CourseSerializer(serializers.ModelSerializer):
+#     subheadings = SubheadingSerializer(many=True, required=False)
+
+#     class Meta:
+#         model = Course
+#         fields = ['id', 'title', 'description', 'teacher', 'subheadings']
+#         read_only_fields = ['teacher']
+
+#     def create(self, validated_data):
+#         subheadings_data = validated_data.pop('subheadings', [])
+#         course = Course.objects.create(**validated_data)
+#         for subheading_data in subheadings_data:
+#             Subheading.objects.create(course=course, **subheading_data)
+#         return course
+
+class CourseFileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Subheading
-        fields = ['id', 'title', 'videos', 'documents']
+        model = CourseFile
+        fields = ['id', 'file']
+
+class CourseImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourseImage
+        fields = ['id', 'image']
+
+class CourseVideoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourseVideo
+        fields = ['id', 'video']
 
 class CourseSerializer(serializers.ModelSerializer):
-    subheadings = SubheadingSerializer(many=True, required=False)
+    files = CourseFileSerializer(many=True, read_only=True)
+    images = CourseImageSerializer(many=True, read_only=True)
+    videos = CourseVideoSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
-        fields = ['id', 'title', 'description', 'teacher', 'subheadings']
-        read_only_fields = ['teacher']
+        fields = ['id', 'title', 'description', 'created_at', 'files', 'images', 'videos']
 
-    def create(self, validated_data):
-        subheadings_data = validated_data.pop('subheadings', [])
-        course = Course.objects.create(**validated_data)
-        for subheading_data in subheadings_data:
-            Subheading.objects.create(course=course, **subheading_data)
-        return course
 
 class EnrollmentSerializer(serializers.ModelSerializer):
     class Meta:

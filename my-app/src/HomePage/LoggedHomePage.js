@@ -51,8 +51,8 @@ function LoggedHomePage() {
       <Header />
       
       <OnCourse/>
-      {role === 'teacher' && <CreateCourse />}
-      {role === 'student' && <Enrollment />}
+      {/* {role === 'teacher' && <CreateCourse />}
+      {role === 'student' && <Enrollment />} */}
       <Courses/>
       <Category/>
       <Projects/>

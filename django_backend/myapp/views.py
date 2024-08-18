@@ -36,6 +36,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
 from .models import Notification
 from .serializers import NotificationSerializer
+from rest_framework.decorators import action
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTOPS
@@ -106,35 +107,67 @@ class ProfileListView(generics.ListAPIView):
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
 
+
+    @action(detail=True, methods=['post'])
+    def upload_files(self, request, pk=None):
+        profile = self.get_object()
+        
+        Profile_imgs = request.FILES.getlist('profile_img')
+        print(f'Received Images: {Profile_imgs}')
+        for profile_img in Profile_imgs:
+            Profile_img.objects.create(profile= profile, profile_img=profile_img)
+
+
+        return Response({'status': 'profile img uploaded'}, status=status.HTTP_200_OK)
+    
+    def perform_create(self, serializer):
+        profile = serializer.save()
+
+        # Handle file upload manually
+
+        profile_imgs = self.request.FILES.getlist('profile_img')
+
+        print(f'Images: {profile_imgs}')
+        
+        for profile_img in profile_imgs:
+            Profile_img.objects.create(profile=profile, profile_img=profile_img)
+
+
 ###################################################################################
 
 
+# from rest_framework import generics, permissions
+# from .models import Course, Subheading, Enrollment, Video, Document
+# from .serializers import CourseSerializer, SubheadingSerializer, EnrollmentSerializer, VideoSerializer, DocumentSerializer
+
 from rest_framework import generics, permissions
-from .models import Course, Subheading, Enrollment, Video, Document
-from .serializers import CourseSerializer, SubheadingSerializer, EnrollmentSerializer, VideoSerializer, DocumentSerializer
+from .models import Course, Enrollment
+from .serializers import CourseSerializer, EnrollmentSerializer
 
-class CourseListCreateView(generics.ListCreateAPIView):
-    queryset = Course.objects.all()
-    serializer_class = CourseSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(teacher=self.request.user.profile)
 
-class CourseDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Course.objects.all()
-    serializer_class = CourseSerializer
-    permission_classes = [permissions.IsAuthenticated]
+# class CourseListCreateView(generics.ListCreateAPIView):
+#     queryset = Course.objects.all()
+#     serializer_class = CourseSerializer
+#     permission_classes = [permissions.IsAuthenticated]
 
-class SubheadingListCreateView(generics.ListCreateAPIView):
-    queryset = Subheading.objects.all()
-    serializer_class = SubheadingSerializer
-    permission_classes = [permissions.IsAuthenticated]
+#     def perform_create(self, serializer):
+#         serializer.save(teacher=self.request.user.profile)
 
-class SubheadingDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Subheading.objects.all()
-    serializer_class = SubheadingSerializer
-    permission_classes = [permissions.IsAuthenticated]
+# class CourseDetailView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Course.objects.all()
+#     serializer_class = CourseSerializer
+#     permission_classes = [permissions.IsAuthenticated]
+
+# class SubheadingListCreateView(generics.ListCreateAPIView):
+#     queryset = Subheading.objects.all()
+#     serializer_class = SubheadingSerializer
+#     permission_classes = [permissions.IsAuthenticated]
+
+# class SubheadingDetailView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Subheading.objects.all()
+#     serializer_class = SubheadingSerializer
+#     permission_classes = [permissions.IsAuthenticated]
 
 class EnrollmentListCreateView(generics.ListCreateAPIView):
     queryset = Enrollment.objects.all()
@@ -144,35 +177,35 @@ class EnrollmentListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(student=self.request.user.profile)
 
-class VideoListCreateView(generics.ListCreateAPIView):
-    queryset = Video.objects.all()
-    serializer_class = VideoSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = (MultiPartParser, JSONParser)
+# class VideoListCreateView(generics.ListCreateAPIView):
+#     queryset = Video.objects.all()
+#     serializer_class = VideoSerializer
+#     permission_classes = [permissions.IsAuthenticated]
+#     parser_classes = (MultiPartParser, JSONParser)
 
-    def perform_create(self, serializer):
-        subheading = Subheading.objects.get(pk=self.kwargs['subheading_pk'])
-        serializer.save(subheading=subheading)
+#     def perform_create(self, serializer):
+#         subheading = Subheading.objects.get(pk=self.kwargs['subheading_pk'])
+#         serializer.save(subheading=subheading)
 
-class VideoDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Video.objects.all()
-    serializer_class = VideoSerializer
-    permission_classes = [permissions.IsAuthenticated]
+# class VideoDetailView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Video.objects.all()
+#     serializer_class = VideoSerializer
+#     permission_classes = [permissions.IsAuthenticated]
 
-class DocumentListCreateView(generics.ListCreateAPIView):
-    queryset = Document.objects.all()
-    serializer_class = DocumentSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = (MultiPartParser, JSONParser)
+# class DocumentListCreateView(generics.ListCreateAPIView):
+#     queryset = Document.objects.all()
+#     serializer_class = DocumentSerializer
+#     permission_classes = [permissions.IsAuthenticated]
+#     parser_classes = (MultiPartParser, JSONParser)
 
-    def perform_create(self, serializer):
-        subheading = Subheading.objects.get(pk=self.kwargs['subheading_pk'])
-        serializer.save(subheading=subheading)
+#     def perform_create(self, serializer):
+#         subheading = Subheading.objects.get(pk=self.kwargs['subheading_pk'])
+#         serializer.save(subheading=subheading)
 
-class DocumentDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Document.objects.all()
-    serializer_class = DocumentSerializer
-    permission_classes = [permissions.IsAuthenticated]
+# class DocumentDetailView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Document.objects.all()
+#     serializer_class = DocumentSerializer
+#     permission_classes = [permissions.IsAuthenticated]
 
 
 
@@ -185,3 +218,56 @@ class NotificationListCreateView(generics.ListCreateAPIView):
 class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
+
+
+from rest_framework import viewsets
+from .models import Course, CourseFile, CourseImage, CourseVideo
+from .serializers import CourseSerializer, CourseFileSerializer, CourseImageSerializer, CourseVideoSerializer
+from rest_framework.response import Response
+from rest_framework.decorators import action
+
+class CourseViewSet(viewsets.ModelViewSet):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+
+    @action(detail=True, methods=['post'])
+    def upload_files(self, request, pk=None):
+        course = self.get_object()
+        files = request.FILES.getlist('files')
+        images = request.FILES.getlist('images')
+        videos = request.FILES.getlist('videos')
+
+
+        print(f'Received Files: {files}')
+        print(f'Received Images: {images}')
+        print(f'Received Videos: {videos}')
+
+        for file in files:
+            CourseFile.objects.create(course=course, file=file)
+        for image in images:
+            CourseImage.objects.create(course=course, image=image)
+        for video in videos:
+            CourseVideo.objects.create(course=course, video=video)
+
+        return Response({'status': 'files uploaded'}, status=status.HTTP_200_OK)
+    
+    def perform_create(self, serializer):
+        course = serializer.save()
+
+        # Handle file upload manually
+        files = self.request.FILES.getlist('files')
+        images = self.request.FILES.getlist('images')
+        videos = self.request.FILES.getlist('videos')
+
+        print(f'Files: {files}')
+        print(f'Images: {images}')
+        print(f'Videos: {videos}')
+
+        for file in files:
+            CourseFile.objects.create(course=course, file=file)
+        
+        for image in images:
+            CourseImage.objects.create(course=course, image=image)
+        
+        for video in videos:
+            CourseVideo.objects.create(course=course, video=video)

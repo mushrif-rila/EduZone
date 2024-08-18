@@ -99,10 +99,7 @@ export function Profile() {
     const authTokens = localStorage.getItem('authTokens'); 
     const tokens = JSON.parse(authTokens);
     const token = tokens.access;
-
     const formData = new FormData();
-
-    
     
     for (const key in profile) {
       if (key === 'profile_img' && profile[key] && typeof profile[key] !== 'string') {

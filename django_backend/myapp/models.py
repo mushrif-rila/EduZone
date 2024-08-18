@@ -69,30 +69,47 @@ def delete_user_profile(sender, instance, **kwargs):
     except Profile.DoesNotExist:
         pass
 
+# class Course(models.Model):
+#     title = models.CharField(max_length=100)
+#     description = models.TextField()
+#     teacher = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='courses')
+
+# class Subheading(models.Model):
+#     title = models.CharField(max_length=100)
+#     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='subheadings')
+
+# class Video(models.Model):
+#     title = models.CharField(max_length=100)
+#     file = models.FileField(upload_to='videos/')
+#     subheading = models.ForeignKey(Subheading, on_delete=models.CASCADE, related_name='videos')
+
+#     def __str__(self):
+#         return self.title
+
+# class Document(models.Model):
+#     title = models.CharField(max_length=100)
+#     file = models.FileField(upload_to='documents/')
+#     subheading = models.ForeignKey(Subheading, on_delete=models.CASCADE, related_name='documents')
+
+#     def __str__(self):
+#         return self.title
+
 class Course(models.Model):
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=255)
     description = models.TextField()
-    teacher = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='courses')
+    created_at = models.DateTimeField(auto_now_add=True)
 
-class Subheading(models.Model):
-    title = models.CharField(max_length=100)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='subheadings')
+class CourseFile(models.Model):
+    course = models.ForeignKey(Course, related_name='files', on_delete=models.CASCADE)
+    file = models.FileField(upload_to='courses/files/')
 
-class Video(models.Model):
-    title = models.CharField(max_length=100)
-    file = models.FileField(upload_to='videos/')
-    subheading = models.ForeignKey(Subheading, on_delete=models.CASCADE, related_name='videos')
+class CourseImage(models.Model):
+    course = models.ForeignKey(Course, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='courses/images/')
 
-    def __str__(self):
-        return self.title
-
-class Document(models.Model):
-    title = models.CharField(max_length=100)
-    file = models.FileField(upload_to='documents/')
-    subheading = models.ForeignKey(Subheading, on_delete=models.CASCADE, related_name='documents')
-
-    def __str__(self):
-        return self.title
+class CourseVideo(models.Model):
+    course = models.ForeignKey(Course, related_name='videos', on_delete=models.CASCADE)
+    video = models.FileField(upload_to='courses/videos/')
 
 class Enrollment(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')

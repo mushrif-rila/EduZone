@@ -32,6 +32,8 @@ import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
 import Ibm from "../../../img/ibm.png"
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import CourseUploadForm from "./CourseUploadForm";
+import CourseList from "./CourseList";
 
 export function Home() {
   const [title, setTitle] = useState('');
@@ -39,6 +41,25 @@ export function Home() {
   const [subheadings, setSubheadings] = useState([{ title: '' }]);
   const [message, setMessage] = useState('');
   const [profile, setProfile] = useState({});
+  const [courses, setCourses] = useState([]);
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/courses/');
+        setCourses(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  const toggleCourseDetails = (courseId) => {
+    setSelectedCourseId(selectedCourseId === courseId ? null : courseId);
+  };
 
   const handleSubheadingChange = (index, event) => {
     const newSubheadings = subheadings.slice();
@@ -111,34 +132,11 @@ export function Home() {
     fetchProfile();
   }, []);
 
-  const [courses, setCourses] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const authTokens = localStorage.getItem('authTokens'); 
-        const tokens = JSON.parse(authTokens);
-        const token = tokens.access;
-        const response = await axios.get('http://localhost:8000/api/courses/', 
-          {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-        }
-        );
-        setCourses(response.data);
-        setLoading(false);
-      } catch (error) {
-        setError('Error fetching courses.');
-        setLoading(false);
-      }
-    };
 
-    fetchCourses();
-  }, []);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -153,9 +151,10 @@ export function Home() {
     <div className="mt-12">
       {profile.role === 'teacher' ? (
         <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-1">
-    
 
-        <form onSubmit={handleSubmit}>
+        <CourseUploadForm />
+    
+        {/* <form onSubmit={handleSubmit}>
   
         <Card>
           <CardHeader
@@ -224,11 +223,14 @@ export function Home() {
           </CardBody>
         </Card>
   
-        </form>
+        </form> */}
           
         </div>
         ) : null}
+
+        
     
+        
       <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-2">
       
         {courses.map((course) => (
@@ -237,16 +239,16 @@ export function Home() {
             value={course.title}  
             // {...rest}
             title={course.description}
-            // icon={<img src={icon} className="w-12 h-12"></img>}
-            footer={
-              <Typography className="font-normal text-blue-gray-600">
-                <strong className="gray">{course.subheadings.length}</strong>
-                &nbsp;subheadings
-              </Typography>
-            }
+            icon={<img src={course.images[0].image} className="w-12 h-12"></img>}
+            // footer={
+            //   <Typography className="font-normal text-blue-gray-600">
+            //     <strong className="gray">{course.subheadings.length}</strong>
+            //     &nbsp;subheadings
+            //   </Typography>
+            // }
           />
         ))}
-      </div>
+      </div> 
       <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-3">
         {statisticsChartsData.map((props) => (
           <StatisticsChart
