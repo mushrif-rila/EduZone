@@ -42,20 +42,36 @@ export function Home() {
   const [message, setMessage] = useState('');
   const [profile, setProfile] = useState({});
   const [courses, setCourses] = useState([]);
+  const [studentCourses, setStudentCourses] = useState([]);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [enrollmentStatuses, setEnrollmentStatuses] = useState({});
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await axios.get('http://localhost:8000/api/courses/');
-        setCourses(response.data);
-      } catch (error) {
-        console.error(error);
+useEffect(() => {
+  const checkEnrollments = async () => {
+    try {
+      const authTokens = localStorage.getItem('authTokens');
+      const tokens = JSON.parse(authTokens);
+      const token = tokens.access;
+
+      const statuses = {};
+      for (const course of studentCourses) {
+        const response = await axios.get(`http://localhost:8000/api/courses/${course.id}/`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        statuses[course.id] = response.data.is_enrolled;
       }
-    };
+      setEnrollmentStatuses(statuses);
+    } catch (error) {
+      console.error('Error checking enrollment status:', error);
+      setError('Failed to check enrollment status');
+      setLoading(false);
+    }
+  };
 
-    fetchCourses();
-  }, []);
+  checkEnrollments();
+}, [studentCourses]);
+
 
   const toggleCourseDetails = (courseId) => {
     setSelectedCourseId(selectedCourseId === courseId ? null : courseId);
@@ -106,37 +122,67 @@ export function Home() {
     }
   };
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const authTokens = localStorage.getItem('authTokens'); 
+  const checkEnrollment = async (id) => {
+    try {
+      const authTokens = localStorage.getItem('authTokens');
       const tokens = JSON.parse(authTokens);
       const token = tokens.access;
 
-      const response = await fetch('http://localhost:8000/api/profile/', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const response = await axios.get(`http://localhost:8000/api/courses/${id}/`, {
+        headers: { 'Authorization': `Bearer ${token}` },
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setProfile(data);
-        setLoading(false);
-      } else {
-        console.error('Failed to fetch profile');
-        setLoading(false);
+      return response.data.is_enrolled;
+
+    } catch (error) {
+      console.error('Error checking enrollment status:', error);
+      setError('Failed to check enrollment status');
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const authTokens = localStorage.getItem('authTokens'); 
+        const tokens = JSON.parse(authTokens);
+        const token = tokens.access;
+  
+        // Fetch profile
+        const profileResponse = await fetch('http://localhost:8000/api/profile/', {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+  
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json();
+          setProfile(profileData);
+          setLoading(false);
+  
+          // Fetch courses
+          const coursesResponse = await axios.get('http://localhost:8000/api/courses/', {
+            headers: { 'Authorization': `Bearer ${token}` },
+          });
+  
+          const filteredCourses = coursesResponse.data.filter(course => course.teacher_name === profileData.profile_username);
+          setStudentCourses(coursesResponse.data);
+          setCourses(filteredCourses);
+        } else {
+          console.error('Failed to fetch profile');
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error(error);
       }
     };
-
-    fetchProfile();
+  
+    fetchData();
   }, []);
+  
 
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -150,6 +196,7 @@ export function Home() {
     
     <div className="mt-12">
       {profile.role === 'teacher' ? (
+        <>
         <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-1">
 
         <CourseUploadForm />
@@ -226,7 +273,43 @@ export function Home() {
         </form> */}
           
         </div>
-        ) : null}
+        <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-2">
+      
+        {courses.map((course) => (
+          <StatisticsCard
+            key={course.id}
+            value={course.title}  
+            // {...rest}
+            title={course.description}
+            icon={<img src={course.images[0].image} className="w-12 h-12"></img>}
+            footer={
+              <Typography className="font-normal text-blue-gray-600">
+                <strong className="gray">{course.teacher_name}</strong>
+                &nbsp;
+              </Typography>
+            }
+          />
+        ))}
+      </div> 
+      </>
+
+        ) : <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-2">
+        {studentCourses.map((course) => (
+          enrollmentStatuses[course.id] && (
+            <StatisticsCard
+              key={course.id}
+              value={course.title}
+              title={course.description}
+              icon={<img src={course.images[0].image} className="w-12 h-12" alt="course" />}
+              footer={
+                <Typography className="font-normal text-blue-gray-600">
+                  <strong className="gray">{course.teacher_name}</strong>
+                </Typography>
+              }
+            />
+          )
+        ))}
+      </div> }
 
         
     
@@ -240,12 +323,12 @@ export function Home() {
             // {...rest}
             title={course.description}
             icon={<img src={course.images[0].image} className="w-12 h-12"></img>}
-            // footer={
-            //   <Typography className="font-normal text-blue-gray-600">
-            //     <strong className="gray">{course.subheadings.length}</strong>
-            //     &nbsp;subheadings
-            //   </Typography>
-            // }
+            footer={
+              <Typography className="font-normal text-blue-gray-600">
+                <strong className="gray">{course.teacher_name}</strong>
+                &nbsp;
+              </Typography>
+            }
           />
         ))}
       </div> 

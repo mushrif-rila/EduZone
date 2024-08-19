@@ -15,6 +15,10 @@ const CourseUploadForm = () => {
     e.preventDefault();
     setLoading(true);  // Start loading
 
+    const authTokens = localStorage.getItem('authTokens'); 
+    const tokens = JSON.parse(authTokens);
+    const token = tokens.access;
+
     let formData = new FormData();
     formData.append('title', title);
     formData.append('description', description);
@@ -29,7 +33,9 @@ const CourseUploadForm = () => {
 
     try {
       const response = await axios.post('http://localhost:8000/api/courses/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': 'multipart/form-data', 
+          'Authorization': `Bearer ${token}`,
+         },
       });
       console.log('Course uploaded:', response.data);
       setUploadStatus('Upload successful!');

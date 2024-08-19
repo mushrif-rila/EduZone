@@ -25,8 +25,15 @@ const CourseList = () => {
 
   useEffect(() => {
     const fetchCourses = async () => {
+      const authTokens = localStorage.getItem('authTokens'); 
+      const tokens = JSON.parse(authTokens);
+      const token = tokens.access;
       try {
-        const response = await axios.get('http://localhost:8000/api/courses/');
+        const response = await axios.get('http://localhost:8000/api/courses/', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         setCourses(response.data);
       } catch (error) {
         console.error(error);

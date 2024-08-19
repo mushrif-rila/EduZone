@@ -7,6 +7,7 @@ import courseImg04 from "../images/ui-ux.png";
 import OnCourseCard from "./OnCourseCard.jsx";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import EnrollButton from "./EnrollButton.js";
 
 import "./On-course.css";
 
@@ -50,9 +51,6 @@ const headingStyles = {
   color: '#0a2b1e',
   fontWeight: 600,
 };
-
-
-
 
 const OnCourse = () => {
   const [courses, setCourses] = useState([]);

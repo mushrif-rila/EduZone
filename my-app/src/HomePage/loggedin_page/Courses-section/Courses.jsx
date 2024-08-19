@@ -5,6 +5,8 @@ import courseImg2 from "../images/graphics-design.png";
 import courseImg3 from "../images/ui-ux.png";
 import "./courses.css";
 import CourseCard from "./CourseCard";
+import axios from "axios";
+import { useState, useEffect } from "react";
 
 const coursesData = [
   {
@@ -51,6 +53,34 @@ const buttonStyle = {
 };
 
 const Courses = () => {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const authTokens = localStorage.getItem('authTokens'); 
+        const tokens = JSON.parse(authTokens);
+        const token = tokens.access;
+        const response = await axios.get('http://localhost:8000/api/courses/', 
+          {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        }
+        );
+        setCourses(response.data);
+        setLoading(false);
+      } catch (error) {
+        setError('Error fetching courses.');
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
   return (
     <section  style={{ marginTop: '100px' }} >
       <Container>
@@ -71,7 +101,7 @@ const Courses = () => {
               </div>
             </div>
           </Col>
-          {coursesData.map((item) => (
+          {courses.map((item) => (
             <Col lg="4" md="6" sm="6">
               <CourseCard key={item.id} item={item} />
             </Col>

@@ -69,35 +69,12 @@ def delete_user_profile(sender, instance, **kwargs):
     except Profile.DoesNotExist:
         pass
 
-# class Course(models.Model):
-#     title = models.CharField(max_length=100)
-#     description = models.TextField()
-#     teacher = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='courses')
-
-# class Subheading(models.Model):
-#     title = models.CharField(max_length=100)
-#     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='subheadings')
-
-# class Video(models.Model):
-#     title = models.CharField(max_length=100)
-#     file = models.FileField(upload_to='videos/')
-#     subheading = models.ForeignKey(Subheading, on_delete=models.CASCADE, related_name='videos')
-
-#     def __str__(self):
-#         return self.title
-
-# class Document(models.Model):
-#     title = models.CharField(max_length=100)
-#     file = models.FileField(upload_to='documents/')
-#     subheading = models.ForeignKey(Subheading, on_delete=models.CASCADE, related_name='documents')
-
-#     def __str__(self):
-#         return self.title
 
 class Course(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='courses')
 
 class CourseFile(models.Model):
     course = models.ForeignKey(Course, related_name='files', on_delete=models.CASCADE)
@@ -114,6 +91,9 @@ class CourseVideo(models.Model):
 class Enrollment(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
     student = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='enrollments')
+
+    class Meta:
+        unique_together = ('course', 'student')
 
     def __str__(self):
         return f"{self.student.user.username} enrolled in {self.course.title}"

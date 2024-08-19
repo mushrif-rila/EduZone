@@ -133,41 +133,9 @@ class ProfileListView(generics.ListAPIView):
             Profile_img.objects.create(profile=profile, profile_img=profile_img)
 
 
-###################################################################################
-
-
-# from rest_framework import generics, permissions
-# from .models import Course, Subheading, Enrollment, Video, Document
-# from .serializers import CourseSerializer, SubheadingSerializer, EnrollmentSerializer, VideoSerializer, DocumentSerializer
-
 from rest_framework import generics, permissions
 from .models import Course, Enrollment
 from .serializers import CourseSerializer, EnrollmentSerializer
-
-
-
-# class CourseListCreateView(generics.ListCreateAPIView):
-#     queryset = Course.objects.all()
-#     serializer_class = CourseSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     def perform_create(self, serializer):
-#         serializer.save(teacher=self.request.user.profile)
-
-# class CourseDetailView(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Course.objects.all()
-#     serializer_class = CourseSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-# class SubheadingListCreateView(generics.ListCreateAPIView):
-#     queryset = Subheading.objects.all()
-#     serializer_class = SubheadingSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-# class SubheadingDetailView(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Subheading.objects.all()
-#     serializer_class = SubheadingSerializer
-#     permission_classes = [permissions.IsAuthenticated]
 
 class EnrollmentListCreateView(generics.ListCreateAPIView):
     queryset = Enrollment.objects.all()
@@ -176,37 +144,6 @@ class EnrollmentListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(student=self.request.user.profile)
-
-# class VideoListCreateView(generics.ListCreateAPIView):
-#     queryset = Video.objects.all()
-#     serializer_class = VideoSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-#     parser_classes = (MultiPartParser, JSONParser)
-
-#     def perform_create(self, serializer):
-#         subheading = Subheading.objects.get(pk=self.kwargs['subheading_pk'])
-#         serializer.save(subheading=subheading)
-
-# class VideoDetailView(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Video.objects.all()
-#     serializer_class = VideoSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-# class DocumentListCreateView(generics.ListCreateAPIView):
-#     queryset = Document.objects.all()
-#     serializer_class = DocumentSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-#     parser_classes = (MultiPartParser, JSONParser)
-
-#     def perform_create(self, serializer):
-#         subheading = Subheading.objects.get(pk=self.kwargs['subheading_pk'])
-#         serializer.save(subheading=subheading)
-
-# class DocumentDetailView(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Document.objects.all()
-#     serializer_class = DocumentSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
 
 
 class NotificationListCreateView(generics.ListCreateAPIView):
@@ -229,6 +166,7 @@ from rest_framework.decorators import action
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    permission_classes = [IsAuthenticated]
 
     @action(detail=True, methods=['post'])
     def upload_files(self, request, pk=None):
@@ -252,7 +190,10 @@ class CourseViewSet(viewsets.ModelViewSet):
         return Response({'status': 'files uploaded'}, status=status.HTTP_200_OK)
     
     def perform_create(self, serializer):
-        course = serializer.save()
+        if not self.request.user.is_authenticated:
+            raise serializer.ValidationError("User must be logged in to create a course.")
+        course = serializer.save(teacher=self.request.user)
+        
 
         # Handle file upload manually
         files = self.request.FILES.getlist('files')
@@ -271,3 +212,17 @@ class CourseViewSet(viewsets.ModelViewSet):
         
         for video in videos:
             CourseVideo.objects.create(course=course, video=video)
+
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def enroll(self, request, pk=None):
+        course = self.get_object()
+        student = request.user.profile
+
+        # Check if the student is already enrolled in the course
+        if Enrollment.objects.filter(course=course, student=student).exists():
+            return Response({"detail": "You are already enrolled in this course."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create a new enrollment
+        Enrollment.objects.create(course=course, student=student)
+        return Response({"detail": "Successfully enrolled in the course."}, status=status.HTTP_201_CREATED)

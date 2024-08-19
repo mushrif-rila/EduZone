@@ -89,47 +89,6 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['id', 'user', 'full_name', 'bio', 'verified', 'role', 'institute', 'profile_username', 'profile_email', 'profile_img']
 
-    # def update(self, instance, validated_data):
-    #     # Check if the profile image is being removed
-    #     if 'profile_img' in self.initial_data and self.initial_data['profile_img'] == '':
-    #         instance.profile_img.delete(save=False)
-    #         validated_data['profile_img'] = None
-    #     return super().update(instance, validated_data)
-    
-    
-# class VideoSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Video
-#         fields = ['id', 'title', 'file', 'subheading']
-
-# class DocumentSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Document
-#         fields = ['id', 'title', 'file', 'subheading']
-
-# class SubheadingSerializer(serializers.ModelSerializer):
-#     videos = VideoSerializer(many=True, read_only=True)
-#     documents = DocumentSerializer(many=True, read_only=True)
-
-#     class Meta:
-#         model = Subheading
-#         fields = ['id', 'title', 'videos', 'documents']
-
-# class CourseSerializer(serializers.ModelSerializer):
-#     subheadings = SubheadingSerializer(many=True, required=False)
-
-#     class Meta:
-#         model = Course
-#         fields = ['id', 'title', 'description', 'teacher', 'subheadings']
-#         read_only_fields = ['teacher']
-
-#     def create(self, validated_data):
-#         subheadings_data = validated_data.pop('subheadings', [])
-#         course = Course.objects.create(**validated_data)
-#         for subheading_data in subheadings_data:
-#             Subheading.objects.create(course=course, **subheading_data)
-#         return course
-
 class CourseFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseFile
@@ -146,13 +105,22 @@ class CourseVideoSerializer(serializers.ModelSerializer):
         fields = ['id', 'video']
 
 class CourseSerializer(serializers.ModelSerializer):
+    teacher_name = serializers.CharField(source='teacher.username', read_only=True)
+
     files = CourseFileSerializer(many=True, read_only=True)
     images = CourseImageSerializer(many=True, read_only=True)
     videos = CourseVideoSerializer(many=True, read_only=True)
+    is_enrolled = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
-        fields = ['id', 'title', 'description', 'created_at', 'files', 'images', 'videos']
+        fields = ['id', 'title', 'description', 'created_at','teacher_name','is_enrolled', 'files', 'images', 'videos']
+
+    def get_is_enrolled(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return Enrollment.objects.filter(course=obj, student=request.user.profile).exists()
+        return False
 
 
 class EnrollmentSerializer(serializers.ModelSerializer):

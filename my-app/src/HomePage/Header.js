@@ -40,6 +40,7 @@ import logo from './assets/logo.jpeg'
 import { Input } from "@material-tailwind/react";
 import AuthService from '../authService';
 import AuthContext from "../context/AuthContext";
+import SearchBarWithSuggestions from "./SearchBar";
 
 
 const profileMenuItems = [
