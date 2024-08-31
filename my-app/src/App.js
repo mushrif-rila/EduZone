@@ -9,6 +9,8 @@ import PrivateRoute from './PrivateRoute';
 import AuthService from './authService';
 import { AuthProvider } from './context/AuthContext';
 import RoleSelector from './Login/role';
+import StreamingApp from './DashboardApp/pages/dashboard/LiveStreaming';
+import { Courseplay } from './DashboardApp/pages/dashboard/Coursepage';
 
 function App() {
   const location = useLocation();
@@ -25,9 +27,11 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/role" element={<RoleSelector />} />
+      <Route path="/course/:courseid" element={<Courseplay />} />
       <Route path="/dashboard/*" element={<PrivateRoute />}>
         <Route path="*" element={<Dashboard />} />
       </Route>
+      <Route path="/streaming/:roomid/:userid/:username" element={<StreamingApp />} />
       <Route path="*" element={<Navigate to="/dashboard/home" replace />} />
     </Routes>
     </AuthProvider>

@@ -34,6 +34,12 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import CourseUploadForm from "./CourseUploadForm";
 import CourseList from "./CourseList";
+import { useNavigate } from 'react-router-dom';
+import StreamingApp from "./LiveStreaming";
+import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
+
+
+
 
 export function Home() {
   const [title, setTitle] = useState('');
@@ -46,6 +52,8 @@ export function Home() {
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [enrollmentStatuses, setEnrollmentStatuses] = useState({});
+  const navigate = useNavigate();
+  const [isStreaming, setIsStreaming] = useState(false);
 
 useEffect(() => {
   const checkEnrollments = async () => {
@@ -161,7 +169,7 @@ useEffect(() => {
   
           // Fetch courses
           const coursesResponse = await axios.get('http://localhost:8000/api/courses/', {
-            headers: { 'Authorization': `Bearer ${token}` },
+            headers: { 'Authorization': `Bearer ${token}`},
           });
   
           const filteredCourses = coursesResponse.data.filter(course => course.teacher_name === profileData.profile_username);
@@ -178,17 +186,20 @@ useEffect(() => {
   
     fetchData();
   }, []);
+
   
 
-
+  const handleOpenNewTab = () => {
+      const newTabUrl = `${window.location.origin}/streaming/${profile.profile_username}/${profile.profile_username}/${profile.full_name}`;
+      window.open(newTabUrl, '_blank'); // Open in a new tab
+  };
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
-
-
-
+  
 
   return (
     <>
@@ -198,6 +209,15 @@ useEffect(() => {
       {profile.role === 'teacher' ? (
         <>
         <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-1">
+        {/* <Button 
+          color="lightBlue" 
+          size="lg" 
+          ripple="light" 
+          onClick={() => navigate(`/stream/${profile.profile_username}/${profile.profile_username}/${profile.full_name}`)}> 
+            Create Live Stream 
+        </Button> */}
+
+        <Button onClick={handleOpenNewTab}>Start Streaming</Button>
 
         <CourseUploadForm />
     
@@ -276,6 +296,7 @@ useEffect(() => {
         <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-2">
       
         {courses.map((course) => (
+          <>
           <StatisticsCard
             key={course.id}
             value={course.title}  
@@ -289,6 +310,8 @@ useEffect(() => {
               </Typography>
             }
           />
+          <Button onClick={() => navigate(`/course/${course.id}`)}>See course</Button>
+          </>
         ))}
       </div> 
       </>
@@ -314,7 +337,7 @@ useEffect(() => {
         
     
         
-      <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-2">
+      {/* <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-2">
       
         {courses.map((course) => (
           <StatisticsCard
@@ -331,8 +354,8 @@ useEffect(() => {
             }
           />
         ))}
-      </div> 
-      <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-3">
+      </div>  */}
+      {/* <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-3">
         {statisticsChartsData.map((props) => (
           <StatisticsChart
             key={props.title}
@@ -348,7 +371,7 @@ useEffect(() => {
             }
           />
         ))}
-      </div>
+      </div> */}
       <div className="mb-4 grid grid-cols-1 gap-6 xl:grid-cols-3">
         <Card className="overflow-hidden xl:col-span-2 border border-blue-gray-100 shadow-sm">
           <CardHeader
@@ -540,4 +563,4 @@ useEffect(() => {
   );
 }
 
-export default Home;
+export default {Home,StreamingApp };

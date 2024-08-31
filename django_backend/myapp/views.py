@@ -37,6 +37,7 @@ from rest_framework import status
 from .models import Notification
 from .serializers import NotificationSerializer
 from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser, FormParser
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTOPS
@@ -72,7 +73,13 @@ class ProfileDetailView(generics.RetrieveUpdateAPIView):
         return self.request.user.profile
 
     def perform_update(self, serializer):
-        serializer.save(user=self.request.user)
+    # Handle image uploads separately
+        image_data = self.request.FILES.get('profile_img')
+        if image_data:
+            image_instance = Profile_img.objects.create(profile_img=image_data)
+            serializer.save(profile_img=image_instance)
+        else:
+            serializer.save()
 
     def perform_create(self, serializer):
         image_data = self.request.data.get('profile_img', None)
@@ -106,6 +113,15 @@ class ProfileListView(generics.ListAPIView):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
+
+    def put(self, request, *args, **kwargs):
+        profile = self.request.user.profile
+        serializer = ProfileSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
     @action(detail=True, methods=['post'])
@@ -134,8 +150,8 @@ class ProfileListView(generics.ListAPIView):
 
 
 from rest_framework import generics, permissions
-from .models import Course, Enrollment
-from .serializers import CourseSerializer, EnrollmentSerializer
+from .models import Course, Enrollment, SubtitleVideo, SubtitleFile, Subtitle
+from .serializers import CourseSerializer, EnrollmentSerializer, SubtitleFileSerializer, SubtitleSerializer, SubtitleVideoSerializer
 
 class EnrollmentListCreateView(generics.ListCreateAPIView):
     queryset = Enrollment.objects.all()
@@ -158,8 +174,8 @@ class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 from rest_framework import viewsets
-from .models import Course, CourseFile, CourseImage, CourseVideo
-from .serializers import CourseSerializer, CourseFileSerializer, CourseImageSerializer, CourseVideoSerializer
+from .models import Course, CourseImage
+from .serializers import CourseSerializer, CourseImageSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
@@ -181,11 +197,11 @@ class CourseViewSet(viewsets.ModelViewSet):
         print(f'Received Videos: {videos}')
 
         for file in files:
-            CourseFile.objects.create(course=course, file=file)
+            SubtitleFile.objects.create(course=course, file=file)
         for image in images:
             CourseImage.objects.create(course=course, image=image)
         for video in videos:
-            CourseVideo.objects.create(course=course, video=video)
+            SubtitleVideo.objects.create(course=course, video=video)
 
         return Response({'status': 'files uploaded'}, status=status.HTTP_200_OK)
     
@@ -194,24 +210,32 @@ class CourseViewSet(viewsets.ModelViewSet):
             raise serializer.ValidationError("User must be logged in to create a course.")
         course = serializer.save(teacher=self.request.user)
         
-
-        # Handle file upload manually
-        files = self.request.FILES.getlist('files')
         images = self.request.FILES.getlist('images')
-        videos = self.request.FILES.getlist('videos')
 
-        print(f'Files: {files}')
         print(f'Images: {images}')
-        print(f'Videos: {videos}')
-
-        for file in files:
-            CourseFile.objects.create(course=course, file=file)
         
         for image in images:
             CourseImage.objects.create(course=course, image=image)
-        
-        for video in videos:
-            CourseVideo.objects.create(course=course, video=video)
+
+        i = 0
+        while f'subtitles[{i}][title]' in self.request.data:
+            subtitle_title = self.request.data.get(f'subtitles[{i}][title]')
+            subtitle_description = self.request.data.get(f'subtitles[{i}][description]')
+            subtitle = Subtitle.objects.create(course=course, title=subtitle_title, description=subtitle_description)
+
+            # Handling Subtitle Files
+            files = self.request.FILES.getlist(f'subtitles[{i}][files]')
+            print(f'Files in subtitle {i}: {files}')
+            for file in files:
+                SubtitleFile.objects.create(subtitle=subtitle, file=file)
+
+            # Handling Subtitle Videos
+            videos = self.request.FILES.getlist(f'subtitles[{i}][videos]')
+            print(f'Videos in subtitle {i}: {videos}')
+            for video in videos:
+                SubtitleVideo.objects.create(subtitle=subtitle, video=video)
+
+            i += 1
 
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])

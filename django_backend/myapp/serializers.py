@@ -6,7 +6,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from .models import Profile, Course, Enrollment, Profile_img
-from .models import Notification, Course, CourseFile, CourseImage, CourseVideo
+from .models import Notification, Course, CourseImage, Subtitle, SubtitleFile, SubtitleVideo
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -89,32 +89,49 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['id', 'user', 'full_name', 'bio', 'verified', 'role', 'institute', 'profile_username', 'profile_email', 'profile_img']
 
-class CourseFileSerializer(serializers.ModelSerializer):
+# class CourseFileSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = CourseFile
+#         fields = ['id', 'file']
+
+
+class SubtitleFileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CourseFile
+        model = SubtitleFile
         fields = ['id', 'file']
+
+class SubtitleVideoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubtitleVideo
+        fields = ['id', 'video']
+
+class SubtitleSerializer(serializers.ModelSerializer):
+    files = SubtitleFileSerializer(many=True, read_only=True)
+    videos = SubtitleVideoSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Subtitle
+        fields = ['id', 'title', 'description', 'files', 'videos']
 
 class CourseImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseImage
         fields = ['id', 'image']
 
-class CourseVideoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CourseVideo
-        fields = ['id', 'video']
+# class CourseVideoSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = CourseVideo
+#         fields = ['id', 'video']
 
 class CourseSerializer(serializers.ModelSerializer):
     teacher_name = serializers.CharField(source='teacher.username', read_only=True)
-
-    files = CourseFileSerializer(many=True, read_only=True)
     images = CourseImageSerializer(many=True, read_only=True)
-    videos = CourseVideoSerializer(many=True, read_only=True)
     is_enrolled = serializers.SerializerMethodField()
+    subtitles = SubtitleSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
-        fields = ['id', 'title', 'description', 'created_at','teacher_name','is_enrolled', 'files', 'images', 'videos']
+        fields = ['id', 'title', 'description', 'created_at','teacher_name','is_enrolled', 'images', 'subtitles']
 
     def get_is_enrolled(self, obj):
         request = self.context.get('request')
@@ -133,3 +150,5 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ['id', 'message', 'created_at']
+
+

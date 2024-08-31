@@ -76,7 +76,7 @@ const profileMenuItems = [
   },
 ];
 
-function ProfileMenu() {
+function ProfileMenu({profileImg}) {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const closeMenu = () => setIsMenuOpen(false);
   const navigate = useNavigate();
@@ -100,7 +100,7 @@ function ProfileMenu() {
             size="sm"
             alt="tania andrew"
             className="border border-gray-900 p-0.5"
-            src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1480&q=80"
+            src={profileImg}
           />
           <ChevronDownIcon
             strokeWidth={2.5}
@@ -308,7 +308,7 @@ function NavList() {
   );
 }
  
-function Header() {
+function Header({profile_img}) {
   const [openNav, setOpenNav] = React.useState(false);
   const isAuthenticated = AuthService.isAuthenticated();
  
@@ -345,7 +345,7 @@ function Header() {
         </div>
         {isAuthenticated ? (
           <div className="hidden gap-2 lg:flex"> 
-            <ProfileMenu /> 
+            <ProfileMenu profileImg={profile_img} /> 
           </div>
           ) : (
         <div className="hidden gap-2 lg:flex">
@@ -378,7 +378,7 @@ function Header() {
         <NavList />
         {isAuthenticated ? (
           <div className="flex w-full flex-nowrap items-center gap-2 lg:hidden"> 
-            <ProfileMenu /> 
+            <ProfileMenu profileImg={profile_img} /> 
           </div>
           ) : (
         <div className="flex w-full flex-nowrap items-center gap-2 lg:hidden">

@@ -76,17 +76,30 @@ class Course(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='courses')
 
-class CourseFile(models.Model):
-    course = models.ForeignKey(Course, related_name='files', on_delete=models.CASCADE)
-    file = models.FileField(upload_to='courses/files/')
+class Subtitle(models.Model):
+    course = models.ForeignKey(Course, related_name='subtitles', on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+
+class SubtitleFile(models.Model):
+    subtitle = models.ForeignKey(Subtitle, related_name='files', on_delete=models.CASCADE)
+    file = models.FileField(upload_to='subtitles/files/')
+
+class SubtitleVideo(models.Model):
+    subtitle = models.ForeignKey(Subtitle, related_name='videos', on_delete=models.CASCADE)
+    video = models.FileField(upload_to='subtitles/videos/')
+
+# class CourseFile(models.Model):
+#     course = models.ForeignKey(Course, related_name='files', on_delete=models.CASCADE)
+#     file = models.FileField(upload_to='courses/files/')
 
 class CourseImage(models.Model):
     course = models.ForeignKey(Course, related_name='images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='courses/images/')
 
-class CourseVideo(models.Model):
-    course = models.ForeignKey(Course, related_name='videos', on_delete=models.CASCADE)
-    video = models.FileField(upload_to='courses/videos/')
+# class CourseVideo(models.Model):
+#     course = models.ForeignKey(Course, related_name='videos', on_delete=models.CASCADE)
+#     video = models.FileField(upload_to='courses/videos/')
 
 class Enrollment(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')

@@ -13,6 +13,7 @@ export function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [isProfileEditing, setIsProfileEditing] = useState(false);
   const [profile, setProfile] = useState({});
+  const [profile_img, setProfileImg] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
@@ -49,6 +50,7 @@ export function Profile() {
       if (response.ok) {
         const data = await response.json();
         setProfile(data);
+        setProfileImg(data.profile_img);
         setLoading(false);
       } else {
         console.error('Failed to fetch profile');
@@ -67,21 +69,36 @@ export function Profile() {
     });
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
+    e.preventDefault();
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-      setProfile({
-        ...profile,
-        profile_img: file,
-      });
-      handleUpdateProfile(file);
+    try{
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+        setProfileImg(file);
+        console.log("file image" , file);
+      }
+
     }
+    catch (error) {
+      console.error('Error during save Profile:', error);
+    }
+
+    
+    
   };
+
+  useEffect(() => {
+    // Log profileImg when it changes
+    if (profile_img) {
+      console.log("profile image", profile_img);
+      handleUpdateProfile();
+    }
+  }, [profile_img]);
 
   
 
@@ -93,39 +110,42 @@ export function Profile() {
     setImagePreview(null);
   };
 
-  const handleUpdateProfile = async (image) => {
+  const handleUpdateProfile = async () => {
     setIsProfileEditing(false);
-
-    const authTokens = localStorage.getItem('authTokens'); 
+  
+    const authTokens = localStorage.getItem('authTokens');
     const tokens = JSON.parse(authTokens);
     const token = tokens.access;
     const formData = new FormData();
-    
-    for (const key in profile) {
-      if (key === 'profile_img' && profile[key] && typeof profile[key] !== 'string') {
-        formData.append(key, profile[key]);
-      } else {
-        formData.append(key, profile[key]);
-      }
+  
+    // Append required fields
+    formData.append('full_name', profile.full_name);
+    formData.append('bio', profile.bio);
+    formData.append('institute', profile.institute);
+    formData.append('profile_img', profile_img);
+  
+    // Append user field (assuming profile contains user ID)
+    if (profile.user) {
+      formData.append('user', profile.user);
     }
 
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}: ${value}`);
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
     }
 
     try {
       const response = await fetch('http://localhost:8000/api/profile/', {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
         },
-        body: formData
+        body: formData,
       });
-
+  
       if (response.ok) {
         const data = await response.json();
         setProfile(data);
-
+  
         swal.fire({
           title: 'Profile updated successfully!',
           icon: 'success',
@@ -138,7 +158,7 @@ export function Profile() {
       } else {
         const errorData = await response.json();
         console.error('Failed to save Profile:', errorData);
-
+  
         swal.fire({
           title: 'Failed to update profile.',
           icon: 'error',
@@ -153,6 +173,8 @@ export function Profile() {
       console.error('Error during save Profile:', error);
     }
   };
+  
+  
 
   if (loading) {
     return <div>Loading...</div>;
@@ -170,7 +192,7 @@ export function Profile() {
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-6">
                 <Avatar
-                  src={imagePreview || profile.profile_img || '/img/bruce-mars.jpeg'}
+                  src={imagePreview || '/img/bruce-mars.jpeg' || profile.profile_img.profile_img }
                   alt={profile.profile_username}
                   size="xl"
                   variant="rounded"
@@ -200,7 +222,7 @@ export function Profile() {
                 </Typography>
               </div>
             </div>
-            <div className="w-96">
+            {/* <div className="w-96">
               <Tabs value="app">
                 <TabsHeader>
                   <Tab value="app">
@@ -217,7 +239,7 @@ export function Profile() {
                   </Tab>
                 </TabsHeader>
               </Tabs>
-            </div>
+            </div> */}
           </div>
           <div className="grid-cols-1 mb-12 grid gap-12 px-4 lg:grid-cols-2 xl:grid-cols-3">
             <div>
@@ -288,7 +310,7 @@ export function Profile() {
                 </div>
               }
             />
-            <div>
+            {/* <div>
               <Typography variant="h6" color="blue-gray" className="mb-3">
                 Messsages
               </Typography>
@@ -305,9 +327,9 @@ export function Profile() {
                   />
                 ))}
               </ul>
-            </div>
+            </div> */}
           </div>
-          <div className="px-4 pb-4">
+          {/* <div className="px-4 pb-4">
             <Typography variant="h6" color="blue-gray" className="mb-2">
               Projects
             </Typography>
@@ -348,7 +370,7 @@ export function Profile() {
                 </Card>
               ))}
             </div>
-          </div>
+          </div> */}
         </CardBody>
       </Card>
     </>

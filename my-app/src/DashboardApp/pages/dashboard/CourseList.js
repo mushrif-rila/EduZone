@@ -65,6 +65,7 @@ const CourseList = () => {
             //   </Typography>
             // }
           />
+          
         ))}
       </div> 
       {/* {courses.map((course) => (

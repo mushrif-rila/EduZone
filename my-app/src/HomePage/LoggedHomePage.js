@@ -11,6 +11,7 @@ import Projects from './loggedin_page/Projects.jsx';
 import CreateCourse from './course_management/courseCreate.js';
 import Enrollment from './course_management/enrolment.js';
 import axiosInstance from '../context/axiosInstance.js';
+import Home from './Home.js';
 
 
 function LoggedHomePage() {
@@ -45,15 +46,15 @@ function LoggedHomePage() {
 
   
   return (
-    
     <div className="homepage">
-      
-      <Header />
-      
-      <OnCourse/>
+      {/* {profile.profile_img.profile_img ? (<Header profile_img={profile.profile_img.profile_img }/>) : (<Header profile_img="https://docs.material-tailwind.com/img/face-2.jpg"/>)} */}
+      {profile.profile_img !== null && <Header profile_img={profile.profile_img.profile_img }/>}
+      {profile.profile_img === null && <Header profile_img="https://docs.material-tailwind.com/img/face-2.jpg"/>}
+      {role === 'teacher' && <Home/>}
+      {role !== 'teacher' && <OnCourse/>}
       {/* {role === 'teacher' && <CreateCourse />}
       {role === 'student' && <Enrollment />} */}
-      <Courses/>
+      {role !== 'teacher' && <Courses/>}
       <Category/>
       <Projects/>
       <Block1/>

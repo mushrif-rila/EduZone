@@ -10,12 +10,32 @@ import {
   Progress,
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
-import { projectsTableData } from "../../data/index";
 import axios from 'axios';
 
 export function Tables() {
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [courses, setCourses] = useState([]);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      const authTokens = localStorage.getItem("authTokens");
+      const tokens = JSON.parse(authTokens);
+      const token = tokens.access;
+      try {
+        const response = await axios.get("http://localhost:8000/api/courses/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setCourses(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -58,11 +78,32 @@ export function Tables() {
         img: profile.profile_img,
         name: profile.profile_username,
         email: profile.profile_email,
-        job: [profile.profile_username, profile.institute],
+        job: [profile.institute],
         online: true,
         date: "23/04/18",
         key: profile.id.toString() // Assuming profile.id is unique and can be used as a key
       }));
+
+  let projectsTableData = loading
+  ? [...Array(4)].map((_, index) => ({
+      img: "https://via.placeholder.com/150",
+      name: "Loading...",
+      members: [], // Initialize as an empty array
+      budget: "Loading...",
+      completion: 0,
+      key: index.toString() // Add a unique key for each item
+    }))
+  : courses.map((course) => ({
+      img: course.images[0].image,
+      name: course.title,
+      members: Array.isArray(course.subtitles) ? course.subtitles.map((subtitle) => ({
+        img: "/img/team-1.jpeg", // Replace with actual image if available
+        name: subtitle.title
+      })) : [], // Ensure members is an empty array if subtitles is not an array
+      budget: course.teacher_name,
+      completion: course.created_at.split('T')[0], // Assuming 100% completion for simplicity
+      key: course.id.toString() // Assuming course.id is unique and can be used as a key
+    }));
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
@@ -142,14 +183,14 @@ export function Tables() {
       <Card>
         <CardHeader variant="gradient" color="gray" className="mb-8 p-6">
           <Typography variant="h6" color="white">
-            Projects Table
+            All Courses
           </Typography>
         </CardHeader>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
           <table className="w-full min-w-[640px] table-auto">
             <thead>
               <tr>
-                {["companies", "members", "budget", "completion", ""].map(
+                {["Title", "Subtitles", "Teacher", "Created", ""].map(
                   (el) => (
                     <th
                       key={el}
@@ -168,7 +209,7 @@ export function Tables() {
             </thead>
             <tbody>
               {projectsTableData.map(
-                ({ img, name, members, budget, completion }, key) => {
+                ({ img, name, members, budget, completion, key }) => {
                   const className = `py-3 px-5 ${
                     key === projectsTableData.length - 1
                       ? ""
@@ -176,7 +217,7 @@ export function Tables() {
                   }`;
 
                   return (
-                    <tr key={name}>
+                    <tr key={key}>
                       <td className={className}>
                         <div className="flex items-center gap-4">
                           <Avatar src={img} alt={name} size="sm" />
@@ -190,19 +231,23 @@ export function Tables() {
                         </div>
                       </td>
                       <td className={className}>
-                        {members.map(({ img, name }, key) => (
-                          <Tooltip key={name} content={name}>
+                        {Array.isArray(members) ? members.map(({ img, name }, memberKey) => (
+                          <Tooltip key={memberKey} content={name}>
                             <Avatar
                               src={img}
                               alt={name}
                               size="xs"
                               variant="circular"
                               className={`cursor-pointer border-2 border-white ${
-                                key === 0 ? "" : "-ml-2.5"
+                                memberKey === 0 ? "" : "-ml-2.5"
                               }`}
                             />
                           </Tooltip>
-                        ))}
+                        )) : (
+                          <Typography className="text-xs font-normal text-blue-gray-500">
+                            No Subtitles
+                          </Typography>
+                        )}
                       </td>
                       <td className={className}>
                         <Typography
@@ -213,20 +258,18 @@ export function Tables() {
                         </Typography>
                       </td>
                       <td className={className}>
-                        <div className="w-10/12">
-                          <Typography
-                            variant="small"
-                            className="mb-1 block text-xs font-medium text-blue-gray-600"
-                          >
-                            {completion}%
-                          </Typography>
-                          <Progress
-                            value={completion}
-                            variant="gradient"
-                            color={completion === 100 ? "green" : "gray"}
-                            className="h-1"
-                          />
-                        </div>
+                        <Typography
+                          variant="small"
+                          className="mb-1 block text-xs font-medium text-blue-gray-600"
+                        >
+                          {completion}
+                        </Typography>
+                        <Progress
+                          value={completion}
+                          variant="gradient"
+                          color={completion === 100 ? "green" : "gray"}
+                          className="h-1"
+                        />
                       </td>
                       <td className={className}>
                         <Typography
