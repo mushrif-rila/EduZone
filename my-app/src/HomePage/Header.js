@@ -52,22 +52,22 @@ const profileMenuItems = [
   {
     label: "My Profile",
     icon: UserCircleIcon,
-    link: "/loggedin/profile"
+    link: "/dashboard/profile"
   },
   {
     label: "Edit Profile",
     icon: Cog6ToothIcon,
-    link: "/loggedin/edit-profile"
+    link: "/dashboard/profile"
   },
   {
     label: "Inbox",
     icon: InboxArrowDownIcon,
-    link: "/loggedin/inbox"
+    link: "/dashboard/notifications"
   },
   {
     label: "Help",
     icon: LifebuoyIcon,
-    link: "/loggedin/help"
+    link: "https://github.com/Dhahlan3890"
   },
   {
     label: "Sign Out",
@@ -336,9 +336,9 @@ function Header({profile_img}) {
 
         </div>
 
-        <div className="w-72">
+        {/* <div className="w-72">
           <Input label="Search Courses" icon={<i className="fas fa-search" />} />
-        </div>
+        </div> */}
         
         <div className="hidden lg:block" id="nav">
           <NavList />

@@ -54,6 +54,39 @@ export function Home() {
   const [enrollmentStatuses, setEnrollmentStatuses] = useState({});
   const navigate = useNavigate();
   const [isStreaming, setIsStreaming] = useState(false);
+  const [input, setInput] = useState('');
+  const [conversation, setConversation] = useState([]);
+
+  const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+
+
+  const handleGPTSubmit = async () => {
+    if (!input.trim()) return;
+
+    // Add user's question to the conversation
+    setConversation([...conversation, { sender: 'user', message: input }]);
+
+    try {
+      // Mocked GPT response, replace this with your API call
+      const response = await fetchGPTResponse(input);
+
+      // Add GPT's response to the conversation
+      setConversation([...conversation, { sender: 'user', message: input }, { sender: 'gpt', message: response }]);
+    } catch (error) {
+      console.error("Error fetching GPT response:", error);
+    }
+
+    setInput(''); // Clear the input field
+  };
+
+  const fetchGPTResponse = async (query) => {
+    const genAI = new GoogleGenerativeAI("AIzaSyDDSwzN5o85ckkRVJXZEidq9zIPKIP8HtY");
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent(query);
+    // Replace this with your actual API call to GPT
+    return result.response.text();
+  };
 
 useEffect(() => {
   const checkEnrollments = async () => {
@@ -301,7 +334,7 @@ useEffect(() => {
             key={course.id}
             value={course.title}  
             // {...rest}
-            title={course.description}
+            title={course.description.length > 50 ? course.description.substring(0, 50) + "..." : course.description}
             icon={<img src={course.images[0].image} className="w-12 h-12"></img>}
             footer={
               <Typography className="font-normal text-blue-gray-600">
@@ -319,10 +352,11 @@ useEffect(() => {
         ) : <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-2">
         {studentCourses.map((course) => (
           enrollmentStatuses[course.id] && (
+            <>
             <StatisticsCard
               key={course.id}
               value={course.title}
-              title={course.description}
+              title={course.description.length > 50 ? course.description.substring(0, 50) + "..." : course.description}
               icon={<img src={course.images[0].image} className="w-12 h-12" alt="course" />}
               footer={
                 <Typography className="font-normal text-blue-gray-600">
@@ -330,6 +364,8 @@ useEffect(() => {
                 </Typography>
               }
             />
+            <Button onClick={() => navigate(`/course/${course.id}`)}>See course</Button>
+            </>
           )
         ))}
       </div> }
@@ -501,62 +537,38 @@ useEffect(() => {
           </CardBody>
         </Card>
         <Card className="border border-blue-gray-100 shadow-sm">
-          <CardHeader
-            floated={false}
-            shadow={false}
-            color="transparent"
-            className="m-0 p-6"
-          >
-            <Typography variant="h6" color="blue-gray" className="mb-2">
-              Projects Overview
-            </Typography>
-            <Typography
-              variant="small"
-              className="flex items-center gap-1 font-normal text-blue-gray-600"
-            >
-              <ArrowUpIcon
-                strokeWidth={3}
-                className="h-3.5 w-3.5 text-green-500"
-              />
-              <strong>24%</strong> this month
-            </Typography>
-          </CardHeader>
-          <CardBody className="pt-0">
-            {ordersOverviewData.map(
-              ({ icon, color, title, description }, key) => (
-                <div key={title} className="flex items-start gap-4 py-3">
-                  <div
-                    className={`relative p-1 after:absolute after:-bottom-6 after:left-2/4 after:w-0.5 after:-translate-x-2/4 after:bg-blue-gray-50 after:content-[''] ${
-                      key === ordersOverviewData.length - 1
-                        ? "after:h-0"
-                        : "after:h-4/6"
-                    }`}
-                  >
-                    {React.createElement(icon, {
-                      className: `!w-5 !h-5 ${color}`,
-                    })}
-                  </div>
-                  <div>
-                    <Typography
-                      variant="small"
-                      color="blue-gray"
-                      className="block font-medium"
-                    >
-                      {title}
-                    </Typography>
-                    <Typography
-                      as="span"
-                      variant="small"
-                      className="text-xs font-medium text-blue-gray-500"
-                    >
-                      {description}
-                    </Typography>
-                  </div>
-                </div>
-              )
-            )}
-          </CardBody>
-        </Card>
+      <CardHeader
+        floated={false}
+        shadow={false}
+        color="transparent"
+        className="m-0 p-6"
+      >
+        <Typography variant="h6" color="blue-gray" className="mb-2">
+          Eduzone GPT
+        </Typography>
+      </CardHeader>
+      <CardBody className="pt-0">
+        <div className="min-h-screen">
+          <Input
+            label="Ask me"
+            icon={<button onClick={handleGPTSubmit}> <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+            </svg></button>}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleGPTSubmit()}
+          />
+          <div className="mt-3 mb-4">
+            {conversation.map((chat, index) => (
+              <Typography key={index} className={`mb-2 ${chat.sender === 'user' ? 'text-blue-gray-700' : 'text-blue-gray-500'}`}>
+                <strong>{chat.sender === 'user' ? 'You:' : 'Eduzone GPT:'}</strong> {chat.message}
+              </Typography>
+            ))}
+          </div>
+          
+        </div>
+      </CardBody>
+    </Card>
       </div>
     </div>
     </>

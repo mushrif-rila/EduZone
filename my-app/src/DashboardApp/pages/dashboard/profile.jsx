@@ -192,7 +192,7 @@ export function Profile() {
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-6">
                 <Avatar
-                  src={imagePreview || '/img/bruce-mars.jpeg' || profile.profile_img.profile_img }
+                  src={imagePreview || (profile.profile_img && profile.profile_img.profile_img) || '/img/bruce-mars.jpeg'}
                   alt={profile.profile_username}
                   size="xl"
                   variant="rounded"

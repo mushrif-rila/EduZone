@@ -2,6 +2,7 @@
 import courseImg01 from "../images/web-development.png";
 import EnrollButton from "./EnrollButton.js";
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 import {
@@ -18,6 +19,7 @@ function OnCourseCard(props) {
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   // Function to check enrollment status
   const checkEnrollment = async () => {
@@ -92,7 +94,7 @@ function OnCourseCard(props) {
       <CardFooter className="pt-0">
         <div>
           {isEnrolled ? (
-          <Button>Continue</Button>
+          <Button onClick={() => navigate(`/course/${id}`)}>Continue</Button>
         ) : (
           <Button onClick={handleEnroll}>Enroll</Button>
         )}

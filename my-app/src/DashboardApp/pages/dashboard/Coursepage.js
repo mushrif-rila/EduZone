@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-import { Tabs, TabsHeader, TabsBody, Tab, TabPanel } from "@material-tailwind/react";
+import { Tabs, TabsHeader, TabsBody, Tab, TabPanel, Typography } from "@material-tailwind/react";
+import PdfImage from "../../../img/pdf.png";
 
 // VerticalTabs Component for handling Videos within a Subtitle
 function VerticalTabs({ subtitle }) {
@@ -10,7 +11,7 @@ function VerticalTabs({ subtitle }) {
       label: `Video ${video.id}`,
       value: video.id,
       desc: (
-        <video width="400" controls>
+        <video className="h-full w-full rounded-lg" controls autoplay>
           <source src={video.video} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
@@ -48,7 +49,9 @@ function SubtitleTabs({ selectedCourse }) {
       value: subtitle.id,
       desc: (
         <div>
-          <h3>{subtitle.subtitleDescription}</h3>
+          <Typography variant="h5" color="blue-gray" className="mb-3">
+              {subtitle.description}
+          </Typography>
           <VerticalTabs subtitle={subtitle} />
           <div>
             <h4>Files</h4>
@@ -56,7 +59,8 @@ function SubtitleTabs({ selectedCourse }) {
               subtitle.files.map((file) => (
                 <div key={file.id}>
                   <a href={file.file} target="_blank" rel="noopener noreferrer">
-                    {file.file.split("/").pop()}
+                    <img src= {PdfImage} style={{width:"100px"}}/>
+                    resource {file.id}
                   </a>
                 </div>
               ))
@@ -64,7 +68,7 @@ function SubtitleTabs({ selectedCourse }) {
               <p>No files available</p>
             )}
           </div>
-          <p>{subtitle.description}</p>
+          {/* <p>{subtitle.description}</p> */}
         </div>
       ),
     }))

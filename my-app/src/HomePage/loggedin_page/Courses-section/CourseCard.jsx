@@ -77,10 +77,11 @@ const CourseCard = (props) => {
             <i class="ri-book-open-line"></i> {description}
           </p>
 
-          <p className="students d-flex align-items-center gap-1">
+          
+        </div>
+        <p className="students d-flex align-items-center gap-1 mb-3">
             <i class="ri-user-line"></i> {teacher_name}
           </p>
-        </div>
 
         {/* <div style={style}>
           <p className="rating d-flex align-items-center gap-1">

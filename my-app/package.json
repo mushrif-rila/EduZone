@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.4",
+    "@google/generative-ai": "^0.17.1",
     "@heroicons/react": "^2.1.5",
     "@lexical/code": "^0.16.1",
     "@lexical/link": "^0.16.1",
