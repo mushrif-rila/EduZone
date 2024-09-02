@@ -158,46 +158,46 @@ const navListMenuItems = [
     description: "Discover a wide range of courses to enhance your skills.",
     icon: RectangleGroupIcon,
   },
-  {
-    title: "About Us",
-    description: "Learn more about our mission and values.",
-    icon: UserGroupIcon,
-  },
-  {
-    title: "Blog",
-    description: "Read articles and insights from industry experts.",
-    icon: Bars4Icon,
-  },
-  {
-    title: "Tutoring",
-    description: "Get personalized help from our experienced tutors.",
-    icon: SunIcon,
-  },
-  {
-    title: "Support",
-    description: "Reach out to us for any assistance or inquiries.",
-    icon: GlobeAmericasIcon,
-  },
-  {
-    title: "Contact",
-    description: "Get in touch with us for more information.",
-    icon: PhoneIcon,
-  },
-  {
-    title: "News",
-    description: "Stay updated with the latest news and events.",
-    icon: NewspaperIcon,
-  },
-  {
-    title: "Library",
-    description: "Access a vast collection of educational resources.",
-    icon: SquaresPlusIcon,
-  },
-  {
-    title: "Special Offers",
-    description: "Explore our latest discounts and deals.",
-    icon: TagIcon,
-  },
+  // {
+  //   title: "About Us",
+  //   description: "Learn more about our mission and values.",
+  //   icon: UserGroupIcon,
+  // },
+  // {
+  //   title: "Blog",
+  //   description: "Read articles and insights from industry experts.",
+  //   icon: Bars4Icon,
+  // },
+  // {
+  //   title: "Tutoring",
+  //   description: "Get personalized help from our experienced tutors.",
+  //   icon: SunIcon,
+  // },
+  // {
+  //   title: "Support",
+  //   description: "Reach out to us for any assistance or inquiries.",
+  //   icon: GlobeAmericasIcon,
+  // },
+  // {
+  //   title: "Contact",
+  //   description: "Get in touch with us for more information.",
+  //   icon: PhoneIcon,
+  // },
+  // {
+  //   title: "News",
+  //   description: "Stay updated with the latest news and events.",
+  //   icon: NewspaperIcon,
+  // },
+  // {
+  //   title: "Library",
+  //   description: "Access a vast collection of educational resources.",
+  //   icon: SquaresPlusIcon,
+  // },
+  // {
+  //   title: "Special Offers",
+  //   description: "Explore our latest discounts and deals.",
+  //   icon: TagIcon,
+  // },
 ];
 
  
