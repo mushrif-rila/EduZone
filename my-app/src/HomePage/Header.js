@@ -40,6 +40,7 @@ import logo from './assets/logo.jpeg'
 import { Input } from "@material-tailwind/react";
 import AuthService from '../authService';
 import AuthContext from "../context/AuthContext";
+import SearchBarWithSuggestions from "./SearchBar";
 
 
 const profileMenuItems = [
@@ -51,22 +52,22 @@ const profileMenuItems = [
   {
     label: "My Profile",
     icon: UserCircleIcon,
-    link: "/loggedin/profile"
+    link: "/dashboard/profile"
   },
   {
     label: "Edit Profile",
     icon: Cog6ToothIcon,
-    link: "/loggedin/edit-profile"
+    link: "/dashboard/profile"
   },
   {
     label: "Inbox",
     icon: InboxArrowDownIcon,
-    link: "/loggedin/inbox"
+    link: "/dashboard/notifications"
   },
   {
     label: "Help",
     icon: LifebuoyIcon,
-    link: "/loggedin/help"
+    link: "https://github.com/Dhahlan3890"
   },
   {
     label: "Sign Out",
@@ -75,7 +76,7 @@ const profileMenuItems = [
   },
 ];
 
-function ProfileMenu() {
+function ProfileMenu({profileImg}) {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const closeMenu = () => setIsMenuOpen(false);
   const navigate = useNavigate();
@@ -99,7 +100,7 @@ function ProfileMenu() {
             size="sm"
             alt="tania andrew"
             className="border border-gray-900 p-0.5"
-            src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1480&q=80"
+            src={profileImg}
           />
           <ChevronDownIcon
             strokeWidth={2.5}
@@ -307,7 +308,7 @@ function NavList() {
   );
 }
  
-function Header() {
+function Header({profile_img}) {
   const [openNav, setOpenNav] = React.useState(false);
   const isAuthenticated = AuthService.isAuthenticated();
  
@@ -335,16 +336,16 @@ function Header() {
 
         </div>
 
-        <div className="w-72">
+        {/* <div className="w-72">
           <Input label="Search Courses" icon={<i className="fas fa-search" />} />
-        </div>
+        </div> */}
         
         <div className="hidden lg:block" id="nav">
           <NavList />
         </div>
         {isAuthenticated ? (
           <div className="hidden gap-2 lg:flex"> 
-            <ProfileMenu /> 
+            <ProfileMenu profileImg={profile_img} /> 
           </div>
           ) : (
         <div className="hidden gap-2 lg:flex">
@@ -377,7 +378,7 @@ function Header() {
         <NavList />
         {isAuthenticated ? (
           <div className="flex w-full flex-nowrap items-center gap-2 lg:hidden"> 
-            <ProfileMenu /> 
+            <ProfileMenu profileImg={profile_img} /> 
           </div>
           ) : (
         <div className="flex w-full flex-nowrap items-center gap-2 lg:hidden">

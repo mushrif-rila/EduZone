@@ -1,40 +1,109 @@
-import React from "react";
 
-const OnCourseCard = (props) => {
-  const { imgUrl, title, students, rating } = props.item;
+import courseImg01 from "../images/web-development.png";
+import EnrollButton from "./EnrollButton.js";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-  const buttonStyle = {
-    background: '#000000',
-    color: '#fff',    
-    borderRadius: '10px',    
-    zIndex: 999999,
-    padding: '4px 25px',
-    fontSize: '1rem',
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Typography,
+  Button,
+} from "@material-tailwind/react";
+ 
+function OnCourseCard(props) {
+  const { id, title, description, images, teacher_name, subheadings } = props.item;
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  // Function to check enrollment status
+  const checkEnrollment = async () => {
+    try {
+      const authTokens = localStorage.getItem('authTokens');
+      const tokens = JSON.parse(authTokens);
+      const token = tokens.access;
+
+      const response = await axios.get(`http://localhost:8000/api/courses/${id}/`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
+      setIsEnrolled(response.data.is_enrolled);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error checking enrollment status:', error);
+      setError('Failed to check enrollment status');
+      setLoading(false);
+    }
   };
+
+  // Function to handle enrollment
+  const handleEnroll = async () => {
+    try {
+      const authTokens = localStorage.getItem('authTokens');
+      const tokens = JSON.parse(authTokens);
+      const token = tokens.access;
+
+      await axios.post(`http://localhost:8000/api/courses/${id}/enroll/`, {}, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
+      setIsEnrolled(true);
+    } catch (error) {
+      console.error('Error enrolling in course:', error);
+      setError('Failed to enroll in the course');
+    }
+  };
+
+  useEffect(() => {
+    checkEnrollment();
+  }, [id]);
+
+  if (loading) {
+    return <button>Loading...</button>;
+  }
+
   
-
   return (
-    <div className="single__free__course">
-      <div className="free__course__img mb-5">
-        <img src={imgUrl} alt="" className="w-100" />
-        <button style={buttonStyle }>Continue</button>
-      </div>
-
-      <div className="free__course__details">
-        <h6>{title}</h6>
-
-        <div className=" d-flex align-items-center gap-5">
-          <span className=" d-flex align-items-center gap-2">
-            <i class="ri-user-line"></i> {students}k
-          </span>
-
-          <span className=" d-flex align-items-center gap-2">
-            <i class="ri-star-fill"></i> {rating}k
-          </span>
+    <>{isEnrolled && <Card className="mt-6 w-96" shadow="true" variant="filled" color="white">
+      <CardHeader color="blue-gray" className="relative h-56">
+        <img
+          src={images[0].image}
+          alt="card-image"
+          className="w-full h-full"
+        />
+      </CardHeader>
+      <CardBody>
+        <div className="d-flex align-items-center justify-between">
+        <Typography variant="h5" color="blue-gray" className="mb-2">
+          {title}
+        </Typography>
+        <Typography variant="h6" color="blue-gray" className="mb-2">
+          {teacher_name}
+        </Typography>
         </div>
-      </div>
-    </div>
+        
+        <Typography>
+          {description}
+        </Typography>
+      </CardBody>
+      <CardFooter className="pt-0">
+        <div>
+          {isEnrolled ? (
+          <Button onClick={() => navigate(`/course/${id}`)}>Continue</Button>
+        ) : (
+          <Button onClick={handleEnroll}>Enroll</Button>
+        )}
+        {error && <p>{error}</p>}
+        </div>
+      </CardFooter>
+    </Card>}</>
+    
   );
-};
+}
 
 export default OnCourseCard;
